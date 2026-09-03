@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react'
-import apiClient from '../services/api'
+import React, { createContext, useState, useEffect, useCallback } from 'react'
+import apiClient, { setTokens, clearAuthStorage, getRefreshToken, getAccessToken } from '../services/api'
 
 export const AuthContext = createContext(null)
 
@@ -7,31 +7,63 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchProfile = useCallback(async () => {
+    const token = getAccessToken()
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
     try {
-      const storedUser = localStorage.getItem('smartats_user')
-      const token = localStorage.getItem('smartats_access_token')
-      if (storedUser && token) {
-        setUser(JSON.parse(storedUser))
-      }
-    } catch (e) {
-      console.error("Failed to restore auth session:", e)
+      const response = await apiClient.get('/auth/me/')
+      setUser(response.data)
+      localStorage.setItem('smartats_user', JSON.stringify(response.data))
+    } catch (err) {
+      console.warn("Session expired or invalid:", err.message)
+      clearAuthStorage()
+      setUser(null)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const login = (userData, tokens) => {
-    localStorage.setItem('smartats_access_token', tokens.access)
-    localStorage.setItem('smartats_refresh_token', tokens.refresh)
-    localStorage.setItem('smartats_user', JSON.stringify(userData))
-    setUser(userData)
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
+  const login = async (email, password) => {
+    const response = await apiClient.post('/auth/token/', { email, password })
+    const { access, refresh, user: basicUser } = response.data
+    setTokens(access, refresh)
+    setUser(basicUser)
+    localStorage.setItem('smartats_user', JSON.stringify(basicUser))
+
+    // Re-fetch rich profile details asynchronously
+    try {
+      const meRes = await apiClient.get('/auth/me/')
+      setUser(meRes.data)
+      localStorage.setItem('smartats_user', JSON.stringify(meRes.data))
+      return meRes.data
+    } catch {
+      return basicUser
+    }
   }
 
-  const logout = () => {
-    localStorage.removeItem('smartats_access_token')
-    localStorage.removeItem('smartats_refresh_token')
-    localStorage.removeItem('smartats_user')
+  const register = async (userData) => {
+    const response = await apiClient.post('/auth/register/', userData)
+    return response.data
+  }
+
+  const logout = async () => {
+    const refresh = getRefreshToken()
+    if (refresh) {
+      try {
+        await apiClient.post('/auth/logout/', { refresh })
+      } catch (err) {
+        console.warn("Backend token blacklist failed:", err.message)
+      }
+    }
+    clearAuthStorage()
     setUser(null)
   }
 
@@ -46,7 +78,9 @@ export const AuthProvider = ({ children }) => {
         isAdmin: user?.role === 'ADMIN',
         loading,
         login,
+        register,
         logout,
+        refreshProfile: fetchProfile,
       }}
     >
       {children}

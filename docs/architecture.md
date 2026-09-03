@@ -18,71 +18,66 @@ SmartATS is an enterprise-grade Applicant Tracking System built to connect Candi
                     |                                   |
 +-------------------v-------------------+ +-------------v---------------+
 |               AI ENGINE               | |      PERSISTENCE TIER       |
-| - pdfplumber / python-docx            | | - PostgreSQL (Neon-ready)   |
+| - pdfplumber / python-docx            | | - PostgreSQL 16 (Neon/Local)|
 | - spaCy (NER & Skill Extraction)      | | - Relational Schema         |
-| - Sentence Transformers (MiniLM)      | | - Media Storage             |
-| - scikit-learn (Cosine Sim / Overlap) | |                             |
+| - Sentence Transformers (MiniLM)      | | - Token Blacklist Tables    |
+| - scikit-learn (Cosine Sim / Overlap) | | - Media Storage             |
 +---------------------------------------+ +-----------------------------+
 ```
 
 ---
 
-## 2. Frontend Architecture
-* **Core Technologies:** React 18, Vite, TailwindCSS, `shadcn/ui` (accessible Radix UI component library).
+## 2. Authentication & Authorization Architecture (Phase 2 Implemented)
+
+### 2.1 Identity & User Management
+* **Email-Based Custom User Model:** `accounts.User` inherits from `AbstractBaseUser` + `PermissionsMixin` with email as unique identifier (`USERNAME_FIELD = 'email'`).
+* **Roles:** `CANDIDATE`, `RECRUITER`, `ADMIN`.
+* **Atomic Profile Creation:** Registration wraps `User` creation and 1:1 profile extension (`Candidate` or `Recruiter`) in a single database transaction (`transaction.atomic`). Public registration as `ADMIN` is strictly forbidden.
+* **Account Deactivation:** Soft deactivation via `is_active=False`. Inactive users cannot authenticate or obtain JWT tokens.
+
+### 2.2 JWT Architecture & Lifecycle
+* **Package:** `djangorestframework-simplejwt` + `rest_framework_simplejwt.token_blacklist`.
+* **Token Specifications:**
+  * **Access Token:** 30 minutes lifetime, signed via HS256 with server `SECRET_KEY`.
+  * **Refresh Token:** 7 days lifetime with automatic token rotation (`ROTATE_REFRESH_TOKENS = True`) and blacklisting (`BLACKLIST_AFTER_ROTATION = True`).
+* **Logout & Invalidation:** Dedicated `POST /api/v1/auth/logout/` endpoint adds the submitted refresh token to the database blacklist table (`token_blacklist`), preventing subsequent token refreshes.
+* **Axios Interceptor Queue:** Client-side Axios interceptor queues concurrent requests during token refresh to eliminate race conditions and avoid infinite loops.
+
+### 2.3 Role-Based & Object-Level Access Control
+* **Backend Permission Classes:**
+  * `IsCandidate`: Restricts endpoints strictly to candidates.
+  * `IsRecruiter`: Restricts endpoints strictly to recruiters.
+  * `IsAdmin`: Restricts endpoints to admin/staff users.
+  * `IsApplicationOwner`: Verifies candidate owns the specific application object.
+  * `IsJobPoster`: Verifies recruiter owns the specific job posting object.
+* **Frontend Route Guards:** `ProtectedRoute` component ensures unauthorized users are redirected to their role-appropriate dashboard or `/login`.
+
+---
+
+## 3. Frontend Architecture
+* **Core Technologies:** React 18, Vite, TailwindCSS, `shadcn/ui` primitives.
 * **State Management:**
-  * **Server / Cache State:** TanStack Query (`@tanstack/react-query`) for API fetching, caching, invalidation, and optimistic updates.
-  * **Client / Session State:** React Context API (`AuthContext`) for authentication state, user identity, and active role.
-  * **HTTP Client:** Axios instance configured with base URL, request interceptors (attaching `Authorization: Bearer <token>`), and response interceptors (handling 401 token refresh).
-  * **Routing:** `react-router-dom` with role-based protected route wrappers (`ProtectedRoute`, `RoleGuard`).
+  * **Server State:** TanStack Query (`@tanstack/react-query`) for cached queries and mutation lifecycles.
+  * **Auth / Client State:** React Context API (`AuthContext`) providing centralized user profile, role helpers (`isCandidate`, `isRecruiter`, `isAdmin`), login, register, and logout.
+  * **HTTP Client:** Axios instance with automated Bearer header injection and 401 token refresh queue.
+  * **Routing:** `react-router-dom` with role-guarded routes.
 
 ---
 
-## 3. Backend Architecture
-* **Framework:** Python (Django 5.x + Django REST Framework).
-* **App Modularization:**
-  * `accounts`: Custom email-based User model, Candidate profile, Recruiter profile, JWT auth, RBAC permissions.
-  * `companies`: Company profiles and verification.
-  * `jobs`: Job postings, search/filters, status management (`DRAFT`, `OPEN`, `PAUSED`, `CLOSED`).
-  * `applications`: Application submission, state machine transitions, historical resume snapshot.
-  * `interviews`: Interview scheduling, type selection, and status updates.
-  * `notifications`: In-app notification queue and read receipts.
-  * `analytics`: Platform-wide aggregation and metrics for Admins.
-  * `ai_engine`: Text parsing, entity/skill extraction, embeddings, and explainable scoring.
-* **Security & Hardening:**
+## 4. Backend Architecture
+* **Framework:** Python (Django 5.1.x + Django REST Framework).
+* **Modular Apps:** `accounts`, `companies`, `jobs`, `applications`, `interviews`, `notifications`, `analytics`, `ai_engine`.
+* **Security Hardening:**
   * Strict CORS policies.
-  * Role-Based Access Control (RBAC) at the DRF view level (`IsCandidate`, `IsRecruiter`, `IsAdmin`).
-  * Object-level ownership validation (`IsApplicationOwner`, `IsJobPoster`).
-  * Parameterized SQL queries via Django ORM preventing SQL injection.
+  * Django password validation validators enforced.
+  * Database transaction locks.
+  * Passwords never returned in API serializers.
 
 ---
 
-## 4. Database Architecture
-* **Engine:** PostgreSQL.
+## 5. Persistence Architecture
+* **Database Engine:** PostgreSQL 16 (Neon-ready).
 * **Schema Highlights:**
-  * Email-based User identity with 1:1 extensions for `Candidate` and `Recruiter`.
-  * `JSONField` for structured skill tags, education records, and explainable AI breakdown.
-  * Explicit constraints prohibiting duplicate active job applications (`unique_together = ['job', 'candidate']`).
-  * Strategic indexes on high-frequency lookup fields (`email`, `role`, `status`, `job_id`, `candidate_id`, `is_read`).
-
----
-
-## 5. AI Matching & Explainability Architecture
-* **Offline Open-Source AI Stack:** No proprietary paid APIs.
-* **Pipeline:**
-  1. **Validation & Extraction:** `pdfplumber` / `python-docx` extracts raw text.
-  2. **NLP Extraction:** `spaCy` identifies skills, degrees, and years of experience.
-  3. **Vector Embeddings:** `sentence-transformers` (`all-MiniLM-L6-v2`) encodes resume and job description into 384-dimensional dense vectors.
-  4. **Cosine Similarity & Skill Overlap:**
-     * Semantic Similarity (60% weight)
-     * Skill Match / Overlap (30% weight)
-     * Experience Alignment (10% weight)
-  5. **Explainability:** Returns exact lists of `matched_skills`, `missing_skills`, and a composite match percentage (0–100%).
-
----
-
-## 6. Authentication & Session Architecture
-* **Standard:** JSON Web Tokens (`djangorestframework-simplejwt`).
-* **Flow:**
-  * Access Token: 30 minutes lifetime.
-  * Refresh Token: 7 days lifetime with automatic token rotation and blacklist on logout.
-  * Header: `Authorization: Bearer <access_token>`.
+  * Relational tables with foreign key constraints (`CASCADE`, `PROTECT`, `SET_NULL`).
+  * `JSONField` for structured skill tags, education records, and AI match breakdowns.
+  * State transition validation and unique application constraints.

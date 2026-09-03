@@ -1,5 +1,5 @@
 from django.test import SimpleTestCase
-from .models import Application
+from apps.applications.models import Application
 from apps.ai_engine.constants import (
     WEIGHT_SEMANTIC_SIMILARITY,
     WEIGHT_SKILL_MATCH,
