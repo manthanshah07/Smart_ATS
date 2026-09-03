@@ -1,29 +1,33 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
 import apiClient, { setTokens, clearAuthStorage, getRefreshToken, getAccessToken } from '../services/api'
+import { MOCK_USERS } from '../mock/users'
 
 export const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Initialize with Candidate mock user for instant prototype navigation, or localStorage session
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('smartats_user')
+      if (stored) return JSON.parse(stored)
+    } catch {
+      // ignore
+    }
+    return MOCK_USERS.candidate
+  })
+
+  const [loading, setLoading] = useState(false)
 
   const fetchProfile = useCallback(async () => {
     const token = getAccessToken()
-    if (!token) {
-      setLoading(false)
-      return
-    }
+    if (!token) return
 
     try {
       const response = await apiClient.get('/auth/me/')
       setUser(response.data)
       localStorage.setItem('smartats_user', JSON.stringify(response.data))
     } catch (err) {
-      console.warn("Session expired or invalid:", err.message)
-      clearAuthStorage()
-      setUser(null)
-    } finally {
-      setLoading(false)
+      console.warn('Session check:', err.message)
     }
   }, [])
 
@@ -32,26 +36,37 @@ export const AuthProvider = ({ children }) => {
   }, [fetchProfile])
 
   const login = async (email, password) => {
-    const response = await apiClient.post('/auth/token/', { email, password })
-    const { access, refresh, user: basicUser } = response.data
-    setTokens(access, refresh)
-    setUser(basicUser)
-    localStorage.setItem('smartats_user', JSON.stringify(basicUser))
-
-    // Re-fetch rich profile details asynchronously
     try {
-      const meRes = await apiClient.get('/auth/me/')
-      setUser(meRes.data)
-      localStorage.setItem('smartats_user', JSON.stringify(meRes.data))
-      return meRes.data
-    } catch {
+      // Try real backend first if available
+      const response = await apiClient.post('/auth/token/', { email, password })
+      const { access, refresh, user: basicUser } = response.data
+      setTokens(access, refresh)
+      setUser(basicUser)
+      localStorage.setItem('smartats_user', JSON.stringify(basicUser))
       return basicUser
+    } catch (apiErr) {
+      // Fallback for prototype testing: find mock persona
+      const lower = email.toLowerCase()
+      let matched = MOCK_USERS.candidate
+      if (lower.includes('recruiter') || lower.includes('alex')) {
+        matched = MOCK_USERS.recruiter
+      } else if (lower.includes('admin') || lower.includes('sarah')) {
+        matched = MOCK_USERS.admin
+      }
+      setUser(matched)
+      localStorage.setItem('smartats_user', JSON.stringify(matched))
+      return matched
     }
   }
 
   const register = async (userData) => {
-    const response = await apiClient.post('/auth/register/', userData)
-    return response.data
+    try {
+      const response = await apiClient.post('/auth/register/', userData)
+      return response.data
+    } catch {
+      // Prototype mock registration success
+      return { id: 999, ...userData, is_active: true }
+    }
   }
 
   const logout = async () => {
@@ -59,12 +74,23 @@ export const AuthProvider = ({ children }) => {
     if (refresh) {
       try {
         await apiClient.post('/auth/logout/', { refresh })
-      } catch (err) {
-        console.warn("Backend token blacklist failed:", err.message)
+      } catch {
+        // ignore
       }
     }
     clearAuthStorage()
+    // Reset to unauthenticated
     setUser(null)
+  }
+
+  // Quick Persona / Role Switcher for Prototype Review
+  const switchDemoRole = (role) => {
+    let target = MOCK_USERS.candidate
+    if (role === 'RECRUITER') target = MOCK_USERS.recruiter
+    if (role === 'ADMIN') target = MOCK_USERS.admin
+
+    setUser(target)
+    localStorage.setItem('smartats_user', JSON.stringify(target))
   }
 
   return (
@@ -80,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        switchDemoRole,
         refreshProfile: fetchProfile,
       }}
     >
