@@ -1,7 +1,9 @@
 /**
  * Mock platform analytics data for Admin dashboard and reports.
+ * Explicitly structures sample platform volume and distribution metrics.
  */
 export const MOCK_ANALYTICS = {
+  is_demo_data: true,
   platform_overview: {
     total_users: 142,
     total_candidates: 118,
@@ -13,7 +15,6 @@ export const MOCK_ANALYTICS = {
     total_interviews: 47,
     average_match_score: 78.4,
     ai_evaluations_completed: 312,
-    system_health_pct: 99.9,
   },
 
   applications_by_status: [

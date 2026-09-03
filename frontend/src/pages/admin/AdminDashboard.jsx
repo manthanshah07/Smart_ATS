@@ -13,10 +13,9 @@ import {
   Sparkles,
   ShieldCheck,
   TrendingUp,
-  Activity,
   ArrowRight,
   ChevronRight,
-  Cpu,
+  Info,
 } from 'lucide-react'
 
 export const AdminDashboard = () => {
@@ -48,32 +47,38 @@ export const AdminDashboard = () => {
       <div className="rounded-2xl border border-border bg-gradient-to-r from-card to-muted/40 p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
-              <ShieldCheck className="h-3.5 w-3.5" /> Platform Governance • System Operational
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+              <ShieldCheck className="h-3.5 w-3.5" /> Platform Governance Center
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               SmartATS Administration Console
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-              Monitoring <strong className="text-foreground">{platform_overview.total_users} registered users</strong>, <strong className="text-foreground">{platform_overview.total_companies} companies</strong>, and <strong className="text-foreground">{platform_overview.total_applications} AI-evaluated applications</strong>.
+              Centralized interface for auditing user accounts, verifying organization profiles, and monitoring platform volume.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Link to="/admin/analytics">
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <TrendingUp className="h-3.5 w-3.5" /> Platform Analytics
-              </Button>
-            </Link>
+            <Badge variant="outline" className="text-xs font-mono bg-background">
+              Sample Platform Metrics (Demo)
+            </Badge>
           </div>
         </div>
+      </div>
+
+      {/* Prototype Disclaimer Banner */}
+      <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-center gap-2">
+        <Info className="h-4 w-4 text-primary shrink-0" />
+        <span>
+          <strong>UI Prototype:</strong> Metrics and distributions displayed below are structured sample datasets illustrating the administrative monitoring experience.
+        </span>
       </div>
 
       {/* 2. CORE SYSTEM METRICS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-border shadow-xs">
           <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Users</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registered Users</span>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="px-5 pb-5">
@@ -86,7 +91,7 @@ export const AdminDashboard = () => {
 
         <Card className="border-border shadow-xs">
           <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Verified Companies</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employers</span>
             <Building className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent className="px-5 pb-5">
@@ -97,23 +102,23 @@ export const AdminDashboard = () => {
 
         <Card className="border-border shadow-xs">
           <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Evaluations</span>
-            <Sparkles className="h-4 w-4 text-emerald-600" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Applications</span>
+            <Layers className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-emerald-600">{platform_overview.ai_evaluations_completed}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Avg Fit Score: {platform_overview.average_match_score}%</p>
+            <div className="text-2xl font-bold text-foreground">{platform_overview.total_applications}</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Total submitted records</p>
           </CardContent>
         </Card>
 
         <Card className="border-border shadow-xs">
           <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Health</span>
-            <Activity className="h-4 w-4 text-purple-600" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sample AI Match Avg</span>
+            <Sparkles className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-purple-600">{platform_overview.system_health_pct}%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">NLP inference latency &lt; 200ms</p>
+            <div className="text-2xl font-bold text-emerald-600">{platform_overview.average_match_score}%</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Reference dataset average</p>
           </CardContent>
         </Card>
       </div>
@@ -125,7 +130,7 @@ export const AdminDashboard = () => {
           <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold">Applications by Recruitment Stage</CardTitle>
-              <CardDescription className="text-xs">Aggregate distribution across all active company jobs.</CardDescription>
+              <CardDescription className="text-xs">Distribution sample across platform job openings.</CardDescription>
             </div>
             <Link to="/admin/applications">
               <Button variant="ghost" size="sm" className="text-xs gap-1">
@@ -156,8 +161,8 @@ export const AdminDashboard = () => {
         <Card className="border-border shadow-xs">
           <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold">Platform Conversion Funnel</CardTitle>
-              <CardDescription className="text-xs">Application submission to hired candidate throughput.</CardDescription>
+              <CardTitle className="text-sm font-bold">Recruitment Pipeline Funnel</CardTitle>
+              <CardDescription className="text-xs">Sample progression rates through each stage.</CardDescription>
             </div>
             <Link to="/admin/analytics">
               <Button variant="ghost" size="sm" className="text-xs gap-1">

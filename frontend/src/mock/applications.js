@@ -1,5 +1,8 @@
+import { MOCK_AI_ANALYSIS_RECORDS } from './ai/mockAIAnalysis'
+
 /**
- * Mock applications data with timeline events and explainable AIAnalysis records.
+ * Mock applications data with timeline milestones and reference sample AIAnalysis records.
+ * Explicitly structures historical demo records vs new pending applications.
  */
 export const MOCK_APPLICATIONS = [
   {
@@ -29,24 +32,7 @@ export const MOCK_APPLICATIONS = [
       { step: 'INTERVIEW_SCHEDULED', title: 'Technical Interview Confirmed', date: 'Aug 29, 2026 at 10:00 AM', done: true },
     ],
     interview_id: 1,
-    ai_analysis: {
-      id: 1,
-      overall_match_score: 91.5,
-      semantic_similarity_score: 93.0,
-      skill_match_score: 91.0,
-      experience_match_score: 85.0,
-      matched_skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs', 'Git'],
-      missing_skills: ['Kubernetes', 'Sentence Transformers'],
-      experience_match_summary: 'Candidate has 3+ years demonstrable full-stack experience aligning with the 4-year requirement.',
-      explanation: {
-        summary: 'Excellent alignment with the core backend & frontend stack. Strong Python/Django API background with production React development.',
-        semantic_summary: 'Semantic embeddings indicate high contextual similarity with the platform architecture requirements.',
-        strengths: ['Deep Django ORM knowledge', 'Proven React state management skills', 'Clear REST API design experience'],
-        recommendations: ['Discuss container orchestration (Kubernetes) familiarity in interview.'],
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_high_match,
   },
   {
     id: 102,
@@ -70,21 +56,7 @@ export const MOCK_APPLICATIONS = [
       { step: 'APPLIED', title: 'Application Submitted', date: 'Aug 26, 2026 at 9:15 AM', done: true },
       { step: 'REVIEWING', title: 'Recruiter Screening', date: 'Aug 27, 2026 at 4:00 PM', done: true },
     ],
-    ai_analysis: {
-      id: 2,
-      overall_match_score: 76.0,
-      semantic_similarity_score: 79.0,
-      skill_match_score: 70.0,
-      experience_match_score: 75.0,
-      matched_skills: ['Python', 'PostgreSQL', 'Redis', 'Docker'],
-      missing_skills: ['Go', 'Kubernetes', 'gRPC'],
-      experience_match_summary: 'Candidate meets general distributed backend criteria but lacks Go and gRPC production experience.',
-      explanation: {
-        summary: 'Good baseline Python and database skillset; however, primary backend microservices in Go require additional ramp-up.',
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_moderate_match,
   },
   {
     id: 103,
@@ -105,23 +77,9 @@ export const MOCK_APPLICATIONS = [
       { step: 'REVIEWING', title: 'Recruiter Screening', date: 'Aug 26, 2026 at 10:00 AM', done: true },
       { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: 'Aug 28, 2026 at 2:10 PM', done: true },
     ],
-    ai_analysis: {
-      id: 3,
-      overall_match_score: 84.0,
-      semantic_similarity_score: 86.0,
-      skill_match_score: 80.0,
-      experience_match_score: 85.0,
-      matched_skills: ['React', 'JavaScript', 'TailwindCSS', 'TanStack Query', 'REST APIs'],
-      missing_skills: ['TypeScript', 'WebSocket'],
-      experience_match_summary: 'Strong React frontend foundations with demonstrated UI/UX component design.',
-      explanation: {
-        summary: 'Solid frontend expertise. Recommend verifying WebSocket and high-frequency real-time rendering experience in subsequent rounds.',
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_frontend_match,
   },
-  // Additional candidates for Job 1 Recruiter Ranking Table demo
+  // Candidates for Recruiter Job Ranking Queue Demo
   {
     id: 104,
     job_id: 1,
@@ -135,21 +93,7 @@ export const MOCK_APPLICATIONS = [
     status: 'SHORTLISTED',
     applied_at: '2026-08-26T11:00:00Z',
     updated_at: '2026-08-28T09:00:00Z',
-    ai_analysis: {
-      id: 4,
-      overall_match_score: 94.0,
-      semantic_similarity_score: 95.0,
-      skill_match_score: 94.0,
-      experience_match_score: 90.0,
-      matched_skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'Kubernetes', 'CI/CD'],
-      missing_skills: ['Sentence Transformers'],
-      experience_match_summary: '6+ years in Python systems and cloud microservices.',
-      explanation: {
-        summary: 'Top tier candidate with extensive distributed Django and Kubernetes experience.',
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_staff_match,
   },
   {
     id: 105,
@@ -164,21 +108,7 @@ export const MOCK_APPLICATIONS = [
     status: 'REVIEWING',
     applied_at: '2026-08-27T16:30:00Z',
     updated_at: '2026-08-28T12:00:00Z',
-    ai_analysis: {
-      id: 5,
-      overall_match_score: 68.5,
-      semantic_similarity_score: 72.0,
-      skill_match_score: 63.0,
-      experience_match_score: 65.0,
-      matched_skills: ['React', 'JavaScript', 'REST APIs', 'Git'],
-      missing_skills: ['Django', 'PostgreSQL', 'Docker'],
-      experience_match_summary: '2 years frontend engineering with emerging Python coursework.',
-      explanation: {
-        summary: 'Strong frontend capabilities but limited backend Django/PostgreSQL architecture experience.',
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_partial_match,
   },
   {
     id: 106,
@@ -193,20 +123,6 @@ export const MOCK_APPLICATIONS = [
     status: 'REJECTED',
     applied_at: '2026-08-21T08:00:00Z',
     updated_at: '2026-08-24T10:00:00Z',
-    ai_analysis: {
-      id: 6,
-      overall_match_score: 48.0,
-      semantic_similarity_score: 52.0,
-      skill_match_score: 42.0,
-      experience_match_score: 40.0,
-      matched_skills: ['JavaScript', 'HTML/CSS', 'Git'],
-      missing_skills: ['Python', 'Django', 'PostgreSQL', 'Docker', 'REST APIs'],
-      experience_match_summary: 'Entry-level experience does not meet senior requirement threshold.',
-      explanation: {
-        summary: 'Significant gaps in backend Python engineering and relational database design.',
-      },
-      model_name: 'all-MiniLM-L6-v2',
-      model_version: '1.0.0',
-    },
+    ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_low_match,
   },
 ]

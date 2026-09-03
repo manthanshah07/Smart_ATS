@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { TableSkeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
-import { Search, Building, ArrowRight, Sparkles, Filter, FileSearch } from 'lucide-react'
+import { Search, Building, ArrowRight, Sparkles, Filter, FileSearch, Clock } from 'lucide-react'
 
 export const CandidateApplicationsPage = () => {
   const [applications, setApplications] = useState([])
@@ -110,21 +110,27 @@ export const CandidateApplicationsPage = () => {
 
                 {/* Score and CTA */}
                 <div className="flex items-center justify-between md:justify-end gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-border">
-                  {app.ai_analysis && (
+                  {app.ai_analysis ? (
                     <div className="text-left md:text-right">
                       <div className="flex items-center md:justify-end gap-1 font-black text-sm text-emerald-600 dark:text-emerald-400">
                         <Sparkles className="h-3.5 w-3.5" />
                         {Math.round(app.ai_analysis.overall_match_score)}%
                       </div>
                       <span className="text-[10px] text-muted-foreground block">
-                        {app.ai_analysis.matched_skills.length} skills matched
+                        Sample Match Score
                       </span>
+                    </div>
+                  ) : (
+                    <div className="text-left md:text-right">
+                      <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
+                        <Clock className="h-3 w-3" /> AI Evaluation Pending
+                      </Badge>
                     </div>
                   )}
 
                   <Link to={`/candidate/applications/${app.id}`}>
                     <Button variant="outline" size="sm" className="gap-1 text-xs">
-                      View AI Analysis <ArrowRight className="h-3.5 w-3.5" />
+                      View Application <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 </div>

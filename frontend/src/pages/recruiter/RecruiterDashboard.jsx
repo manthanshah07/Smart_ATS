@@ -67,7 +67,7 @@ export const RecruiterDashboard = () => {
               Welcome back, {user?.first_name || 'Alex'}!
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-              You have <strong className="text-foreground">{openJobsCount} active job postings</strong> and <strong className="text-foreground">{applicants.length} pre-ranked applicants</strong> awaiting screening.
+              You have <strong className="text-foreground">{openJobsCount} active job postings</strong> and <strong className="text-foreground">{applicants.length} sample applicants</strong> in the screening queue.
             </p>
           </div>
 
@@ -101,7 +101,7 @@ export const RecruiterDashboard = () => {
           </CardHeader>
           <CardContent className="px-5 pb-5">
             <div className="text-2xl font-bold text-foreground">{applicants.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Evaluated by SentenceTransformers</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Prototype candidate records</p>
           </CardContent>
         </Card>
 
@@ -123,7 +123,7 @@ export const RecruiterDashboard = () => {
           </CardHeader>
           <CardContent className="px-5 pb-5">
             <div className="text-2xl font-bold text-purple-600">{interviews.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Upcoming rounds</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Scheduled screening rounds</p>
           </CardContent>
         </Card>
       </div>
@@ -135,7 +135,7 @@ export const RecruiterDashboard = () => {
             <h3 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" /> Top AI-Ranked Candidates (Job #1)
             </h3>
-            <p className="text-xs text-muted-foreground">Applicants pre-ranked by 60/30/10 multi-dimensional scoring.</p>
+            <p className="text-xs text-muted-foreground">Sample applicant ranking demonstrating 60/30/10 multi-factor scoring layout.</p>
           </div>
           <Link to="/recruiter/jobs/1/applicants">
             <Button variant="ghost" size="sm" className="text-xs gap-1">
@@ -174,7 +174,7 @@ export const RecruiterDashboard = () => {
                         {Math.round(app.ai_analysis.overall_match_score)}% Fit
                       </span>
                       <span className="text-[10px] text-muted-foreground block">
-                        {app.ai_analysis.matched_skills.length} matched / {app.ai_analysis.missing_skills.length} missing
+                        Sample Demo Analysis
                       </span>
                     </div>
                   )}

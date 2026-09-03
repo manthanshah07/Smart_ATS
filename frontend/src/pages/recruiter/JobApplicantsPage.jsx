@@ -9,21 +9,16 @@ import { Select } from '../../components/ui/Select'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { Modal } from '../../components/ui/Modal'
 import { TableSkeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
 import {
   Sparkles,
   Search,
   ArrowLeft,
-  ArrowRight,
   CheckCircle2,
-  XCircle,
-  Calendar,
-  Layers,
   ChevronRight,
-  TrendingUp,
   Cpu,
+  Info,
 } from 'lucide-react'
 
 export const JobApplicantsPage = () => {
@@ -34,7 +29,7 @@ export const JobApplicantsPage = () => {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
 
-  // Quick Action State
+  // Status Action Feedback
   const [actionSuccess, setActionSuccess] = useState('')
 
   const loadData = async () => {
@@ -59,7 +54,7 @@ export const JobApplicantsPage = () => {
 
   const handleUpdateStatus = async (appId, newStatus) => {
     await applicationService.updateStatus(appId, newStatus)
-    setActionSuccess(`Applicant #${appId} updated to ${newStatus}`)
+    setActionSuccess(`Applicant #${appId} updated to ${newStatus.replace('_', ' ')}`)
     setTimeout(() => setActionSuccess(''), 3000)
     loadData()
   }
@@ -78,7 +73,7 @@ export const JobApplicantsPage = () => {
         <ArrowLeft className="h-3.5 w-3.5" /> Back to job postings
       </Link>
 
-      {/* Header with Title & Formula explanation */}
+      {/* Header with Title & Explicit Demo Ranking Badge */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -86,19 +81,27 @@ export const JobApplicantsPage = () => {
               Applicant Queue & AI Rankings
             </h1>
             <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20 gap-1 font-semibold">
-              <Cpu className="h-3 w-3" /> Sentence Transformers
+              <Sparkles className="h-3 w-3" /> Sample AI Ranking (Demo)
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Job: <strong className="text-foreground">{job?.title}</strong> ({applicants.length} candidates evaluated)
+            Job: <strong className="text-foreground">{job?.title}</strong> ({applicants.length} sample candidate records)
           </p>
         </div>
 
         {/* Explainability Pill */}
         <div className="hidden lg:flex items-center gap-3 bg-muted/40 p-2.5 rounded-xl border border-border/60 text-xs">
-          <span className="font-semibold text-muted-foreground uppercase text-[10px]">Formula:</span>
+          <span className="font-semibold text-muted-foreground uppercase text-[10px]">Configured Formula:</span>
           <span className="font-mono text-foreground font-bold">Semantic 60% + Skills 30% + Exp 10%</span>
         </div>
+      </div>
+
+      {/* Prototype Context Callout */}
+      <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-center gap-2">
+        <Info className="h-4 w-4 text-primary shrink-0" />
+        <span>
+          <strong>UI Prototype:</strong> Demonstrates applicant ranking ordering based on sample explainable AI match scores. Real ML inference will be integrated in Phase 5.
+        </span>
       </div>
 
       {actionSuccess && (

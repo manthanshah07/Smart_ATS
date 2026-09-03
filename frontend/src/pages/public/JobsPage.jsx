@@ -10,10 +10,10 @@ import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { CardSkeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
-import { Search, MapPin, Briefcase, Clock, Sparkles, Building, ArrowRight, Filter } from 'lucide-react'
+import { Search, MapPin, Briefcase, Clock, Sparkles, Building, ArrowRight } from 'lucide-react'
 
 export const JobsPage = () => {
-  const { user, isCandidate } = useAuth()
+  const { isCandidate } = useAuth()
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -43,7 +43,7 @@ export const JobsPage = () => {
       <div className="space-y-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Explore Open Positions</h1>
         <p className="text-sm text-muted-foreground">
-          Discover vetted engineering and product opportunities evaluated by our explainable matching engine.
+          Discover vetted engineering and product opportunities evaluated by our explainable matching architecture.
         </p>
       </div>
 
@@ -91,8 +91,8 @@ export const JobsPage = () => {
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>Showing <strong className="text-foreground">{jobs.length}</strong> active opportunities</span>
         {isCandidate && (
-          <span className="flex items-center gap-1 text-primary font-medium">
-            <Sparkles className="h-3.5 w-3.5" /> AI match previews active for your resume
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Explainable AI match evaluations generated upon application
           </span>
         )}
       </div>
@@ -151,19 +151,11 @@ export const JobsPage = () => {
                     </div>
                   </div>
 
-                  {/* Actions & Match Preview */}
+                  {/* Actions */}
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border">
-                    {isCandidate && (
-                      <div className="text-right">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
-                          <Sparkles className="h-3 w-3" />
-                          ~88% Estimated Fit
-                        </span>
-                      </div>
-                    )}
                     <Link to={`/jobs/${job.id}`}>
                       <Button size="sm" className="gap-1.5 shadow-xs">
-                        View Details <ArrowRight className="h-3.5 w-3.5" />
+                        View Role Details <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </Link>
                   </div>

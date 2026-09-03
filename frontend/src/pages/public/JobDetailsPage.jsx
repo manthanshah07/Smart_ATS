@@ -22,7 +22,6 @@ import {
   Send,
   FileText,
   Loader2,
-  ExternalLink,
 } from 'lucide-react'
 
 export const JobDetailsPage = () => {
@@ -62,7 +61,7 @@ export const JobDetailsPage = () => {
       setTimeout(() => {
         setApplyModalOpen(false)
         navigate(`/candidate/applications/${createdApp.id}`)
-      }, 1500)
+      }, 1200)
     } catch (err) {
       console.error(err)
     } finally {
@@ -182,7 +181,7 @@ export const JobDetailsPage = () => {
       <Modal
         isOpen={applyModalOpen}
         onClose={() => setApplyModalOpen(false)}
-        title="Submit Job Application"
+        title="Confirm Application Submission"
         description={`Applying to ${job.title} at ${job.company_name}`}
         footer={
           <>
@@ -192,15 +191,15 @@ export const JobDetailsPage = () => {
             <Button size="sm" onClick={handleApply} disabled={submitting || applySuccess} className="gap-2">
               {submitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Evaluating with AI...
+                  <Loader2 className="h-4 w-4 animate-spin" /> Submitting Application...
                 </>
               ) : applySuccess ? (
                 <>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Submitted!
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Application Submitted!
                 </>
               ) : (
                 <>
-                  Confirm & Submit <Send className="h-3.5 w-3.5" />
+                  Submit Application <Send className="h-3.5 w-3.5" />
                 </>
               )}
             </Button>
@@ -211,20 +210,20 @@ export const JobDetailsPage = () => {
           <div className="rounded-lg border border-border p-4 bg-muted/20 space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <FileText className="h-4 w-4 text-primary" />
-              <span>Resume Snapshot Attached</span>
+              <span>Resume to be Attached</span>
             </div>
             <p className="text-xs text-muted-foreground font-mono bg-background p-2 rounded border border-border">
               {user?.profile?.resume_file || 'Jane_Doe_Resume_2026.pdf'}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Your active resume profile (11 skills extracted) will be snapshotted and evaluated via Sentence Transformers.
+              Your profile resume snapshot will be submitted to the hiring team.
             </p>
           </div>
 
-          <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
+          <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-start gap-2">
             <Sparkles className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
             <span>
-              Upon submission, our explainable AI pipeline will calculate your semantic fit score, skill overlaps, and notify the recruiter instantly.
+              AI match evaluation will be computed after submission using our explainable matching pipeline.
             </span>
           </div>
         </div>

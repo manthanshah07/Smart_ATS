@@ -118,18 +118,18 @@ export const CandidateDashboard = () => {
           </CardHeader>
           <CardContent className="px-5 pb-5">
             <div className="text-2xl font-bold text-purple-600">{interviews.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">1 upcoming this week</p>
+            <p className="text-[11px] text-muted-foreground mt-1">1 scheduled this week</p>
           </CardContent>
         </Card>
 
         <Card className="border-border shadow-xs">
           <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Avg AI Match</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sample AI Fit Avg</span>
             <Sparkles className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent className="px-5 pb-5">
             <div className="text-2xl font-bold text-foreground">83.8%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">High semantic alignment</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Prototype reference score</p>
           </CardContent>
         </Card>
       </div>
@@ -208,20 +208,24 @@ export const CandidateDashboard = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  {app.ai_analysis && (
+                  {app.ai_analysis ? (
                     <div className="text-right">
                       <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                         {Math.round(app.ai_analysis.overall_match_score)}% Match
                       </span>
                       <span className="text-[10px] text-muted-foreground block">
-                        {app.ai_analysis.matched_skills.length} skills matched
+                        Sample Match Score
                       </span>
                     </div>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
+                      <Clock className="h-3 w-3" /> Evaluation Pending
+                    </Badge>
                   )}
 
                   <Link to={`/candidate/applications/${app.id}`}>
                     <Button variant="outline" size="sm" className="text-xs">
-                      View AI Breakdown
+                      View Application
                     </Button>
                   </Link>
                 </div>

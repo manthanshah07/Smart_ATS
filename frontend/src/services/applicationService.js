@@ -22,33 +22,27 @@ export const applicationService = {
   },
 
   submitApplication: async (jobId) => {
+    // Prototype submission: Creates application with pending AI state (no fake calculation)
     const newApp = {
       id: MOCK_APPLICATIONS.length + 101,
       job_id: Number(jobId),
       job_title: 'Senior Full-Stack Python & React Engineer',
       company_name: 'TechPulse AI',
+      company_location: 'San Francisco, CA (Hybrid)',
       candidate_id: 101,
       candidate_name: 'Jane Doe',
       candidate_email: 'jane.doe@example.com',
       status: 'APPLIED',
       applied_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      resume_snapshot: {
+        headline: 'Senior Full-Stack Python & React Engineer',
+        skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs', 'Git', 'Redis'],
+      },
       timeline: [
         { step: 'APPLIED', title: 'Application Submitted', date: 'Just now', done: true },
       ],
-      ai_analysis: {
-        id: 99,
-        overall_match_score: 89.0,
-        semantic_similarity_score: 91.0,
-        skill_match_score: 87.0,
-        experience_match_score: 85.0,
-        matched_skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs'],
-        missing_skills: ['Kubernetes'],
-        experience_match_summary: 'Profile aligns with required full-stack years.',
-        explanation: {
-          summary: 'High semantic alignment with candidate resume snapshot.',
-        },
-      },
+      ai_analysis: null, // Pending evaluation state
     }
     MOCK_APPLICATIONS.unshift(newApp)
     return newApp
@@ -59,9 +53,10 @@ export const applicationService = {
     if (!app) throw new Error(`Application #${id} not found`)
     app.status = newStatus
     app.updated_at = new Date().toISOString()
+    app.timeline = app.timeline || []
     app.timeline.push({
       step: newStatus,
-      title: `Status Updated to ${newStatus}`,
+      title: `Status Updated to ${newStatus.replace('_', ' ')}`,
       date: 'Just now',
       done: true,
     })
