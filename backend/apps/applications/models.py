@@ -84,9 +84,17 @@ class Application(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        status_changed = False
+
+        if not is_new:
+            old_instance = Application.objects.get(pk=self.pk)
+            if old_instance.status != self.status:
+                status_changed = True
+
         self.full_clean()
         super().save(*args, **kwargs)
-        if is_new:
+
+        if is_new or status_changed:
             ApplicationStatusHistory.objects.create(
                 application=self,
                 status=self.status
