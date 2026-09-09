@@ -34,7 +34,7 @@ class JobListCreateView(generics.ListCreateAPIView):
         if location:
             queryset = queryset.filter(location__icontains=location)
 
-        return queryset
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         recruiter = getattr(self.request.user, 'recruiter_profile', None)

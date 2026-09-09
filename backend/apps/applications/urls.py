@@ -4,11 +4,13 @@ from .views import (
     CandidateApplicationListView,
     JobApplicantsRankedListView,
     ApplicationStatusUpdateView,
+    ApplicationWithdrawView,
 )
 
 urlpatterns = [
     path('applications/', ApplicationSubmitView.as_view(), name='application_submit'),
     path('candidate/applications/', CandidateApplicationListView.as_view(), name='candidate_applications'),
+    path('candidate/applications/<int:pk>/withdraw/', ApplicationWithdrawView.as_view(), name='application_withdraw'),
     path('jobs/<int:job_id>/applicants/', JobApplicantsRankedListView.as_view(), name='job_applicants_ranked'),
     path('applications/<int:pk>/status/', ApplicationStatusUpdateView.as_view(), name='application_status_update'),
 ]

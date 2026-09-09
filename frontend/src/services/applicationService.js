@@ -1,8 +1,42 @@
 import { MOCK_APPLICATIONS } from '../mock/applications'
 import { MOCK_JOBS } from '../mock/jobs'
+import apiClient from './api'
+
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+
+// Normalizes backend DRF applications to frontend expectations
+const normalizeApp = (app) => {
+  return {
+    ...app,
+    job_title: app.job_details?.title || 'Unknown Position',
+    company_name: app.job_details?.company_details?.name || 'Unknown Company',
+    company_location: app.job_details?.location || '',
+    candidate_name: `${app.candidate_details?.user_name || ''}`.trim() || 'Unknown Candidate',
+    candidate_email: app.candidate_details?.user_email || '',
+    candidate_headline: app.candidate_details?.headline || '',
+    candidate_location: app.candidate_details?.location || '',
+    match_score: app.ai_analysis?.overall_match_score || null,
+    timeline: (app.status_history || []).map((history) => ({
+      step: history.status,
+      title: history.status.replace(/_/g, ' '),
+      date: history.changed_at,
+      done: true,
+    })),
+  }
+}
 
 export const applicationService = {
   getApplications: async (filters = {}) => {
+    if (!isDemoMode) {
+      let endpoint = '/candidate/applications/'
+      if (filters.job_id) {
+        endpoint = `/jobs/${filters.job_id}/applicants/`
+      }
+      const response = await apiClient.get(endpoint)
+      const results = response.data.results || response.data
+      return results.map(normalizeApp)
+    }
+
     let list = [...MOCK_APPLICATIONS]
     if (filters.candidate_id) {
       list = list.filter((a) => a.candidate_id === Number(filters.candidate_id))
@@ -17,21 +51,35 @@ export const applicationService = {
   },
 
   getApplicationById: async (id) => {
+    if (!isDemoMode) {
+      // Assuming recruiter accesses applicants or candidate uses their own list.
+      // DRF doesn't have a direct application detail view yet for general purpose, 
+      // but if the frontend calls this, we must fetch from list and filter.
+      // Wait! The backend doesn't have an endpoint for `GET /applications/{id}/`.
+      // I'll simulate it by returning from the appropriate list.
+      // However, usually it's passed down or fetched from applicant list.
+      const response = await apiClient.get('/candidate/applications/')
+      const results = response.data.results || response.data
+      const app = results.find((a) => a.id === Number(id))
+      if (app) return normalizeApp(app)
+      throw new Error(`Application #${id} not found`)
+    }
+
     const app = MOCK_APPLICATIONS.find((a) => a.id === Number(id))
     if (!app) throw new Error(`Application #${id} not found`)
     return app
   },
 
-  /**
-   * Submit a new application for a given job.
-   * Looks up the actual job to populate job_title, company_name etc.
-   * Creates with pending AI state (no fake calculation).
-   */
   submitApplication: async (jobId) => {
+    if (!isDemoMode) {
+      const response = await apiClient.post('/applications/', { job: jobId })
+      return normalizeApp(response.data)
+    }
+
     const job = MOCK_JOBS.find((j) => j.id === Number(jobId))
     const now = new Date().toISOString()
     const newApp = {
-      id: Date.now(), // Use timestamp as unique id
+      id: Date.now(),
       job_id: Number(jobId),
       job_title: job?.title || 'Unknown Position',
       company_name: job?.company_name || 'Unknown Company',
@@ -45,7 +93,7 @@ export const applicationService = {
       status: 'APPLIED',
       applied_at: now,
       updated_at: now,
-      match_score: null, // Pending AI evaluation
+      match_score: null,
       resume_snapshot: {
         headline: 'Senior Full-Stack Python & React Engineer',
         skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs', 'Git', 'Redis'],
@@ -57,13 +105,18 @@ export const applicationService = {
       timeline: [
         { step: 'APPLIED', title: 'Application Submitted', date: now, done: true },
       ],
-      ai_analysis: null, // AI evaluation queued — pending backend processing
+      ai_analysis: null,
     }
     MOCK_APPLICATIONS.unshift(newApp)
     return newApp
   },
 
   updateStatus: async (id, newStatus) => {
+    if (!isDemoMode) {
+      const response = await apiClient.patch(`/applications/${id}/status/`, { status: newStatus })
+      return normalizeApp(response.data)
+    }
+
     const app = MOCK_APPLICATIONS.find((a) => a.id === Number(id))
     if (!app) throw new Error(`Application #${id} not found`)
     app.status = newStatus
@@ -86,11 +139,12 @@ export const applicationService = {
     return app
   },
 
-  /**
-   * Candidate withdraws their own application.
-   * Only valid when status is APPLIED or REVIEWING.
-   */
   withdrawApplication: async (id) => {
+    if (!isDemoMode) {
+      const response = await apiClient.patch(`/candidate/applications/${id}/withdraw/`)
+      return normalizeApp(response.data)
+    }
+
     return applicationService.updateStatus(id, 'WITHDRAWN')
   },
 }

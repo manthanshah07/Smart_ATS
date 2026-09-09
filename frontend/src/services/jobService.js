@@ -1,7 +1,34 @@
 import { MOCK_JOBS } from '../mock/jobs'
+import apiClient from './api'
+
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+
+// Helper to normalize backend DRF job objects to match frontend expectations
+const normalizeJob = (job) => {
+  return {
+    ...job,
+    company_name: job.company_details?.name || 'Unknown Company',
+    recruiter_name: job.recruiter_details?.user_name || 'Unknown Recruiter',
+    // Fallbacks to avoid breaking UI that expects array of skills
+    required_skills: Array.isArray(job.required_skills) ? job.required_skills : [],
+  }
+}
 
 export const jobService = {
   getJobs: async (filters = {}) => {
+    if (!isDemoMode) {
+      const params = {}
+      if (filters.search) params.search = filters.search
+      if (filters.location && filters.location !== 'ALL') params.location = filters.location
+      if (filters.job_type && filters.job_type !== 'ALL') params.job_type = filters.job_type
+      // Note: Backend handles status filter natively (public users only see OPEN)
+      
+      const response = await apiClient.get('/jobs/', { params })
+      // Unpack DRF pagination
+      const results = response.data.results || response.data
+      return results.map(normalizeJob)
+    }
+
     let list = [...MOCK_JOBS]
 
     if (filters.search) {
@@ -34,12 +61,22 @@ export const jobService = {
   },
 
   getJobById: async (id) => {
+    if (!isDemoMode) {
+      const response = await apiClient.get(`/jobs/${id}/`)
+      return normalizeJob(response.data)
+    }
+
     const job = MOCK_JOBS.find((j) => j.id === Number(id))
     if (!job) throw new Error(`Job #${id} not found`)
     return job
   },
 
   createJob: async (jobData) => {
+    if (!isDemoMode) {
+      const response = await apiClient.post('/jobs/', jobData)
+      return normalizeJob(response.data)
+    }
+
     const newJob = {
       id: MOCK_JOBS.length + 1,
       ...jobData,
@@ -57,6 +94,11 @@ export const jobService = {
   },
 
   updateJob: async (id, updateData) => {
+    if (!isDemoMode) {
+      const response = await apiClient.patch(`/jobs/${id}/`, updateData)
+      return normalizeJob(response.data)
+    }
+
     const index = MOCK_JOBS.findIndex((j) => j.id === Number(id))
     if (index === -1) throw new Error(`Job #${id} not found`)
     MOCK_JOBS[index] = { ...MOCK_JOBS[index], ...updateData, updated_at: new Date().toISOString() }

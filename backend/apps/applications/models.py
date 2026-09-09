@@ -13,15 +13,17 @@ class Application(models.Model):
         INTERVIEW_SCHEDULED = 'INTERVIEW_SCHEDULED', 'Interview Scheduled'
         REJECTED = 'REJECTED', 'Rejected'
         HIRED = 'HIRED', 'Hired'
+        WITHDRAWN = 'WITHDRAWN', 'Withdrawn'
 
     # Authoritative finite-state transition map
     VALID_TRANSITIONS = {
-        ApplicationStatus.APPLIED: [ApplicationStatus.REVIEWING, ApplicationStatus.REJECTED],
-        ApplicationStatus.REVIEWING: [ApplicationStatus.SHORTLISTED, ApplicationStatus.REJECTED],
+        ApplicationStatus.APPLIED: [ApplicationStatus.REVIEWING, ApplicationStatus.REJECTED, ApplicationStatus.WITHDRAWN],
+        ApplicationStatus.REVIEWING: [ApplicationStatus.SHORTLISTED, ApplicationStatus.REJECTED, ApplicationStatus.WITHDRAWN],
         ApplicationStatus.SHORTLISTED: [ApplicationStatus.INTERVIEW_SCHEDULED, ApplicationStatus.REJECTED],
         ApplicationStatus.INTERVIEW_SCHEDULED: [ApplicationStatus.HIRED, ApplicationStatus.REJECTED],
         ApplicationStatus.REJECTED: [],  # Terminal state
         ApplicationStatus.HIRED: [],     # Terminal state
+        ApplicationStatus.WITHDRAWN: [], # Terminal state
     }
 
     job = models.ForeignKey(
@@ -81,8 +83,36 @@ class Application(models.Model):
                     })
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         self.full_clean()
         super().save(*args, **kwargs)
+        if is_new:
+            ApplicationStatusHistory.objects.create(
+                application=self,
+                status=self.status
+            )
+
+
+class ApplicationStatusHistory(models.Model):
+    """Tracks the history of status changes for an application."""
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='status_history'
+    )
+    status = models.CharField(
+        max_length=25,
+        choices=Application.ApplicationStatus.choices
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Application Status History'
+        verbose_name_plural = 'Application Status Histories'
+        ordering = ['changed_at']
+
+    def __str__(self):
+        return f"{self.application.id} -> {self.status} at {self.changed_at}"
 
 
 class AIAnalysis(models.Model):

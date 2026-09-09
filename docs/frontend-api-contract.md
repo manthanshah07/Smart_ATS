@@ -94,7 +94,7 @@ Returns the authenticated candidate's profile including parsed resume data.
 ### PATCH `/candidate/profile/`
 Partial update: `{ parsed_skills: [...] }`, etc.
 
-### POST `/candidate/resume/upload/`
+### POST `/candidate/resume/`
 Multipart form upload: `resume` (file, PDF/DOCX).  
 Returns updated profile fields after extraction.
 
@@ -203,7 +203,7 @@ Returns single application.
 { "status": "SHORTLISTED" }
 ```
 
-### POST `/applications/{id}/withdraw/` *(Candidate only)*
+### PATCH `/candidate/applications/{id}/withdraw/` *(Candidate only)*
 Candidate withdraws their application.
 
 ---

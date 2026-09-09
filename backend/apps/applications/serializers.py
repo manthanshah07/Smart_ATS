@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Application, AIAnalysis
+from .models import Application, AIAnalysis, ApplicationStatusHistory
 from apps.jobs.serializers import JobSerializer
 from apps.accounts.serializers import CandidateProfileSerializer
 
@@ -18,18 +18,24 @@ class AIAnalysisSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ApplicationStatusHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplicationStatusHistory
+        fields = ['status', 'changed_at']
+
 class ApplicationSerializer(serializers.ModelSerializer):
     """Application serializer for candidates and recruiters."""
 
     job_details = JobSerializer(source='job', read_only=True)
     candidate_details = CandidateProfileSerializer(source='candidate', read_only=True)
     ai_analysis = AIAnalysisSerializer(read_only=True)
+    status_history = ApplicationStatusHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Application
         fields = [
             'id', 'job', 'job_details', 'candidate', 'candidate_details',
-            'resume_snapshot', 'status', 'ai_analysis', 'applied_at', 'updated_at'
+            'resume_snapshot', 'status', 'ai_analysis', 'status_history', 'applied_at', 'updated_at'
         ]
         read_only_fields = ['id', 'candidate', 'resume_snapshot', 'applied_at', 'updated_at']
 

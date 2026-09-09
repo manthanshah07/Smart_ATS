@@ -153,13 +153,49 @@ class CandidateProfileView(generics.RetrieveUpdateAPIView):
         return candidate
 
 
+from django.utils import timezone
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 class CandidateResumeUploadView(APIView):
-    """FR-6: Candidate resume upload contract endpoint."""
+    """FR-6: Candidate resume upload endpoint."""
     permission_classes = [IsAuthenticated, IsCandidate]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
+        candidate = getattr(request.user, 'candidate_profile', None)
+        if not candidate:
+            return Response({"error": "Candidate profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        file_obj = request.FILES.get('resume')
+        if not file_obj:
+            return Response({"error": "No resume file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate file extension
+        valid_extensions = ['.pdf', '.docx']
+        if not any(file_obj.name.lower().endswith(ext) for ext in valid_extensions):
+            return Response({"error": "Invalid file format. Only PDF and DOCX are allowed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate file size (e.g., max 5MB)
+        if file_obj.size > 5 * 1024 * 1024:
+            return Response({"error": "File size exceeds 5MB limit."}, status=status.HTTP_400_BAD_REQUEST)
+
+        candidate.resume_file = file_obj
+        candidate.resume_uploaded_at = timezone.now()
+        candidate.save()
+
+        # Simulated parsed skills (as AI is not implemented yet)
+        simulated_skills = ['Python', 'Django', 'React']
+        candidate.parsed_skills = simulated_skills
+        candidate.save()
+
         return Response(
-            {"message": "Resume upload contract ready. AI parsing pipeline will attach in Phase 5."},
+            {
+                "message": "Resume uploaded successfully.",
+                "resume_file": candidate.resume_file.name,
+                "resume_uploaded_at": candidate.resume_uploaded_at,
+                "parsed_skills": candidate.parsed_skills
+            },
             status=status.HTTP_200_OK
         )
 

@@ -91,3 +91,18 @@ class ApplicationStatusUpdateView(generics.UpdateAPIView):
             recruiter = getattr(request.user, 'recruiter_profile', None)
             if not recruiter or obj.job.company != recruiter.company:
                 raise PermissionDenied("You do not have permission to modify this application.")
+
+class ApplicationWithdrawView(generics.UpdateAPIView):
+    """Candidate withdraws their application."""
+    queryset = Application.objects.all()
+    serializer_class = ApplicationStatusUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCandidate]
+
+    def check_object_permissions(self, request, obj):
+        super().check_object_permissions(request, obj)
+        candidate = getattr(request.user, 'candidate_profile', None)
+        if not candidate or obj.candidate != candidate:
+            raise PermissionDenied("You can only withdraw your own applications.")
+
+    def perform_update(self, serializer):
+        serializer.save(status='WITHDRAWN')
