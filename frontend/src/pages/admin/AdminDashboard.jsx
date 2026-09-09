@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { adminService } from '../../services/adminService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { CardSkeleton } from '../../components/ui/Skeleton'
 import {
   Users,
   Building,
   Briefcase,
   Layers,
-  Sparkles,
   ShieldCheck,
-  TrendingUp,
   ArrowRight,
-  ChevronRight,
-  Info,
+  TrendingUp,
 } from 'lucide-react'
 
 export const AdminDashboard = () => {
@@ -42,193 +37,170 @@ export const AdminDashboard = () => {
   const { platform_overview, applications_by_status, hiring_funnel } = analytics
 
   return (
-    <div className="space-y-8">
-      {/* 1. ADMIN OVERVIEW HERO */}
-      <div className="rounded-2xl border border-border bg-gradient-to-r from-card to-muted/40 p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-              <ShieldCheck className="h-3.5 w-3.5" /> Platform Governance Center
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              SmartATS Administration Console
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* 1. ADMIN CONSOLE HEADER */}
+      <div className="border-b border-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Administration & Governance Console
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-              Centralized interface for auditing user accounts, verifying organization profiles, and monitoring platform volume.
-            </p>
+            <span className="text-[10px] font-mono uppercase bg-muted text-muted-foreground px-2 py-0.5 rounded border border-border">
+              Platform Admin
+            </span>
           </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            System overview, user account moderation, employer verification, and recruitment throughput audit.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <Badge variant="outline" className="text-xs font-mono bg-background">
-              Sample Platform Metrics (Demo)
-            </Badge>
-          </div>
+        <div className="flex items-center gap-2">
+          <Link to="/admin/users">
+            <Button size="sm" className="text-xs h-8 font-medium">
+              Manage Users
+            </Button>
+          </Link>
+          <Link to="/admin/companies">
+            <Button variant="outline" size="sm" className="text-xs h-8">
+              Verify Companies
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Prototype Disclaimer Banner */}
-      <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-center gap-2">
-        <Info className="h-4 w-4 text-primary shrink-0" />
-        <span>
-          <strong>UI Prototype:</strong> Metrics and distributions displayed below are structured sample datasets illustrating the administrative monitoring experience.
-        </span>
+      {/* 2. PLATFORM VOLUME METRICS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-lg bg-card border border-border">
+        <div className="space-y-1">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Total Users
+          </span>
+          <div className="text-2xl font-bold text-foreground">{platform_overview.total_users}</div>
+          <span className="text-[11px] text-muted-foreground">
+            {platform_overview.total_candidates} Candidates &bull; {platform_overview.total_recruiters} Recruiters
+          </span>
+        </div>
+
+        <div className="space-y-1 sm:border-l sm:border-border sm:pl-4">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Verified Employers
+          </span>
+          <div className="text-2xl font-bold text-foreground">{platform_overview.total_companies}</div>
+          <span className="text-[11px] text-muted-foreground">{platform_overview.open_jobs} active job postings</span>
+        </div>
+
+        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Total Applications
+          </span>
+          <div className="text-2xl font-bold text-foreground">{platform_overview.total_applications}</div>
+          <span className="text-[11px] text-muted-foreground">Processed by matching engine</span>
+        </div>
+
+        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Interview Conversion
+          </span>
+          <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+            {platform_overview.total_interviews}
+          </div>
+          <span className="text-[11px] text-muted-foreground">{platform_overview.hired_count} total hires completed</span>
+        </div>
       </div>
 
-      {/* 2. CORE SYSTEM METRICS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-border shadow-xs">
-          <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registered Users</span>
-            <Users className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-foreground">{platform_overview.total_users}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {platform_overview.total_candidates} Candidates • {platform_overview.total_recruiters} Recruiters
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-xs">
-          <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employers</span>
-            <Building className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-foreground">{platform_overview.total_companies}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">{platform_overview.open_jobs} active job postings</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-xs">
-          <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Applications</span>
-            <Layers className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-foreground">{platform_overview.total_applications}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Total submitted records</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-xs">
-          <CardHeader className="p-5 flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sample AI Match Avg</span>
-            <Sparkles className="h-4 w-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent className="px-5 pb-5">
-            <div className="text-2xl font-bold text-emerald-600">{platform_overview.average_match_score}%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Reference dataset average</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 3. APPLICATION STATUS DISTRIBUTION & HIRING FUNNEL */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-bold">Applications by Recruitment Stage</CardTitle>
-              <CardDescription className="text-xs">Distribution sample across platform job openings.</CardDescription>
-            </div>
-            <Link to="/admin/applications">
-              <Button variant="ghost" size="sm" className="text-xs gap-1">
-                Audit Table <ChevronRight className="h-3 w-3" />
-              </Button>
+      {/* 3. AUDIT SECTIONS: APPLICATION FUNNEL & WORKFLOW SHORTCUTS */}
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Funnel Distribution (7 Cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Platform Recruitment Funnel</h2>
+            <Link to="/admin/analytics" className="text-xs text-muted-foreground hover:text-foreground font-medium">
+              Detailed Analytics &rarr;
             </Link>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-6 space-y-3.5">
-            {applications_by_status.map((item) => (
-              <div key={item.status} className="space-y-1">
-                <div className="flex justify-between text-xs font-medium">
-                  <span className="text-foreground">{item.label}</span>
-                  <span className="text-muted-foreground font-mono">{item.count} ({item.pct}%)</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${item.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Hiring Funnel */}
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-bold">Recruitment Pipeline Funnel</CardTitle>
-              <CardDescription className="text-xs">Sample progression rates through each stage.</CardDescription>
+          <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+            <div className="space-y-3">
+              {hiring_funnel.map((step) => {
+                const percentage = Math.round((step.count / platform_overview.total_applications) * 100) || 0
+                return (
+                  <div key={step.stage} className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-foreground">{step.stage}</span>
+                      <span className="text-muted-foreground">
+                        <strong className="text-foreground">{step.count}</strong> ({percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-border rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-foreground h-full transition-all duration-300"
+                        style={{ width: `${Math.max(percentage, 4)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <Link to="/admin/analytics">
-              <Button variant="ghost" size="sm" className="text-xs gap-1">
-                Details <ChevronRight className="h-3 w-3" />
-              </Button>
+          </div>
+        </div>
+
+        {/* Administration Modules (5 Cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          <h2 className="text-sm font-semibold text-foreground">Governance Modules</h2>
+
+          <div className="space-y-3">
+            <Link
+              to="/admin/users"
+              className="p-3.5 rounded-lg border border-border bg-card hover:border-foreground/20 transition flex items-center justify-between block"
+            >
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-foreground block">User Account Directory</span>
+                <p className="text-[11px] text-muted-foreground">
+                  Audit candidate profiles, recruiter permissions, and account status.
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </Link>
-          </CardHeader>
 
-          <CardContent className="p-6 space-y-3">
-            {hiring_funnel.map((step, idx) => (
-              <div key={idx} className="p-3 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-md bg-primary/10 text-primary font-bold flex items-center justify-center text-[10px]">
-                    {idx + 1}
-                  </span>
-                  <span className="font-semibold text-foreground">{step.stage}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-foreground font-mono">{step.count}</span>
-                  <Badge variant="outline" className="text-[10px] font-mono bg-background">
-                    {step.conversion}
-                  </Badge>
-                </div>
+            <Link
+              to="/admin/companies"
+              className="p-3.5 rounded-lg border border-border bg-card hover:border-foreground/20 transition flex items-center justify-between block"
+            >
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-foreground block">Company Verification</span>
+                <p className="text-[11px] text-muted-foreground">
+                  Review employer domain verifications and business profiles.
+                </p>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </Link>
 
-      {/* 4. ADMIN SHORTCUT PANELS */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Link to="/admin/users" className="block group">
-          <Card className="border-border hover:border-primary/40 transition shadow-2xs h-full">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div className="space-y-1">
-                <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition">User Directory</h4>
-                <p className="text-xs text-muted-foreground">Manage roles and activate/deactivate accounts.</p>
+            <Link
+              to="/admin/jobs"
+              className="p-3.5 rounded-lg border border-border bg-card hover:border-foreground/20 transition flex items-center justify-between block"
+            >
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-foreground block">Job Requisition Moderation</span>
+                <p className="text-[11px] text-muted-foreground">
+                  Audit published role descriptions and mandatory skill parameters.
+                </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0 ml-2" />
-            </CardContent>
-          </Card>
-        </Link>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </Link>
 
-        <Link to="/admin/companies" className="block group">
-          <Card className="border-border hover:border-primary/40 transition shadow-2xs h-full">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div className="space-y-1">
-                <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition">Company Verification</h4>
-                <p className="text-xs text-muted-foreground">Audit employers and verify credentials.</p>
+            <Link
+              to="/admin/applications"
+              className="p-3.5 rounded-lg border border-border bg-card hover:border-foreground/20 transition flex items-center justify-between block"
+            >
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-foreground block">Application Log & AI Audit</span>
+                <p className="text-[11px] text-muted-foreground">
+                  Verify deterministic scoring calculations across all submissions.
+                </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0 ml-2" />
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link to="/admin/jobs" className="block group">
-          <Card className="border-border hover:border-primary/40 transition shadow-2xs h-full">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div className="space-y-1">
-                <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition">Job Moderation</h4>
-                <p className="text-xs text-muted-foreground">Review and moderate all open postings.</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0 ml-2" />
-            </CardContent>
-          </Card>
-        </Link>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { applicationService } from '../../services/applicationService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { TableSkeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
-import { Search, Building, ArrowRight, Sparkles, Filter, FileSearch, Clock } from 'lucide-react'
+import { formatDate, getMatchScoreFromApp, getMatchLabel, getMatchBadgeClass, cn } from '../../lib/utils'
+import { Search, Briefcase } from 'lucide-react'
 
 export const CandidateApplicationsPage = () => {
   const [applications, setApplications] = useState([])
@@ -25,7 +24,9 @@ export const CandidateApplicationsPage = () => {
         let filtered = data
         if (search) {
           filtered = filtered.filter(
-            (a) => a.job_title.toLowerCase().includes(search.toLowerCase()) || a.company_name.toLowerCase().includes(search.toLowerCase())
+            (a) =>
+              a.job_title.toLowerCase().includes(search.toLowerCase()) ||
+              a.company_name.toLowerCase().includes(search.toLowerCase())
           )
         }
         setApplications(filtered)
@@ -39,113 +40,132 @@ export const CandidateApplicationsPage = () => {
   }, [statusFilter, search])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Submitted Applications</h1>
-          <p className="text-xs text-muted-foreground">
-            Track application progression, recruiter screening milestones, and explainable AI scores.
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">My Applications</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Track submission history, review progress, and inspect AI match evaluation reports.
           </p>
         </div>
         <Link to="/jobs">
-          <Button size="sm" className="gap-1.5 shadow-xs">
-            Browse More Jobs <ArrowRight className="h-3.5 w-3.5" />
+          <Button size="sm" className="text-xs h-8 font-medium gap-1.5">
+            <Briefcase className="h-3.5 w-3.5" /> Browse Open Roles
           </Button>
         </Link>
       </div>
 
-      {/* Filter Bar */}
-      <Card className="border-border shadow-xs">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by role or company name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs"
-            />
-          </div>
-          <div className="w-full sm:w-48">
-            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs">
-              <option value="ALL">All Statuses</option>
-              <option value="APPLIED">Applied</option>
-              <option value="REVIEWING">Under Review</option>
-              <option value="SHORTLISTED">Shortlisted</option>
-              <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
-              <option value="REJECTED">Not Selected</option>
-              <option value="HIRED">Hired</option>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Applications List */}
-      {loading ? (
-        <TableSkeleton rows={4} />
-      ) : applications.length > 0 ? (
-        <div className="space-y-3">
-          {applications.map((app) => (
-            <Card key={app.id} className="border-border shadow-2xs hover:border-primary/50 transition">
-              <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link
-                      to={`/candidate/applications/${app.id}`}
-                      className="text-base font-bold text-foreground hover:text-primary transition"
-                    >
-                      {app.job_title}
-                    </Link>
-                    <StatusBadge type="application" status={app.status} />
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1 font-semibold text-foreground">
-                      <Building className="h-3.5 w-3.5 text-muted-foreground" />
-                      {app.company_name}
-                    </span>
-                    <span>•</span>
-                    <span>Applied on {new Date(app.applied_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                {/* Score and CTA */}
-                <div className="flex items-center justify-between md:justify-end gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-border">
-                  {app.ai_analysis ? (
-                    <div className="text-left md:text-right">
-                      <div className="flex items-center md:justify-end gap-1 font-black text-sm text-emerald-600 dark:text-emerald-400">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        {Math.round(app.ai_analysis.overall_match_score)}%
-                      </div>
-                      <span className="text-[10px] text-muted-foreground block">
-                        Sample Match Score
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-left md:text-right">
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
-                        <Clock className="h-3 w-3" /> AI Evaluation Pending
-                      </Badge>
-                    </div>
-                  )}
-
-                  <Link to={`/candidate/applications/${app.id}`}>
-                    <Button variant="outline" size="sm" className="gap-1 text-xs">
-                      View Application <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      {/* Filter Row */}
+      <div className="grid sm:grid-cols-12 gap-3 p-3 rounded-lg border border-border bg-card">
+        <div className="sm:col-span-8 relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search applications by role title or employer..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 text-xs"
+          />
         </div>
-      ) : (
+        <div className="sm:col-span-4">
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-9 text-xs"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="APPLIED">Applied</option>
+            <option value="REVIEWING">Under Review</option>
+            <option value="SHORTLISTED">Shortlisted</option>
+            <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
+            <option value="REJECTED">Not Selected</option>
+            <option value="HIRED">Hired</option>
+            <option value="WITHDRAWN">Withdrawn</option>
+          </Select>
+        </div>
+      </div>
+
+      {/* Applications Data Table */}
+      {loading ? (
+        <TableSkeleton rows={5} />
+      ) : applications.length === 0 ? (
         <EmptyState
-          icon={FileSearch}
-          title="No applications matching your filters"
-          description="You haven't submitted applications under this status filter yet."
-          actionLabel="View All Jobs"
-          onAction={() => setStatusFilter('ALL')}
+          title="No applications found"
+          description={
+            search || statusFilter !== 'ALL'
+              ? 'No applications match the selected filters.'
+              : 'You have not submitted any applications yet.'
+          }
+          actionText={search || statusFilter !== 'ALL' ? 'Clear Filters' : 'Browse Active Roles'}
+          onAction={() => {
+            if (search || statusFilter !== 'ALL') {
+              setSearch('')
+              setStatusFilter('ALL')
+            } else {
+              window.location.assign('/jobs')
+            }
+          }}
         />
+      ) : (
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-border bg-muted/20 text-[11px] text-muted-foreground">
+            Showing <span className="text-foreground font-semibold">{applications.length}</span> application{applications.length !== 1 ? 's' : ''}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-border bg-muted/20 text-muted-foreground">
+                  <th className="py-3 px-4 font-semibold uppercase text-[10px]">Position & Company</th>
+                  <th className="py-3 px-4 font-semibold uppercase text-[10px]">Applied</th>
+                  <th className="py-3 px-4 font-semibold uppercase text-[10px]">AI Match</th>
+                  <th className="py-3 px-4 font-semibold uppercase text-[10px]">Status</th>
+                  <th className="py-3 px-4 font-semibold uppercase text-[10px] text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {applications.map((app) => {
+                  const score = getMatchScoreFromApp(app)
+                  const label = getMatchLabel(score)
+                  return (
+                    <tr key={app.id} className="hover:bg-muted/20 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <Link
+                          to={`/candidate/applications/${app.id}`}
+                          className="font-semibold text-foreground hover:underline block"
+                        >
+                          {app.job_title}
+                        </Link>
+                        <span className="text-[11px] text-muted-foreground">{app.company_name}</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-muted-foreground whitespace-nowrap">
+                        {formatDate(app.applied_at)}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {score != null ? (
+                          <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border', getMatchBadgeClass(score))}>
+                            {Math.round(score)}% {label}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground font-mono">Evaluation queued</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <StatusBadge type="application" status={app.status} />
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <Link to={`/candidate/applications/${app.id}`}>
+                          <Button variant="outline" size="sm" className="text-xs h-7 px-2.5">
+                            View Dossier &rarr;
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   )

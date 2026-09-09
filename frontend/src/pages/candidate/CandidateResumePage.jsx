@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { candidateService } from '../../services/candidateService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { Input } from '../../components/ui/Input'
 import { CardSkeleton } from '../../components/ui/Skeleton'
+import { formatDate } from '../../lib/utils'
 import {
   UploadCloud,
   FileText,
   CheckCircle2,
-  AlertCircle,
   Plus,
   X,
-  Sparkles,
   GraduationCap,
   Briefcase,
   Loader2,
-  RefreshCw,
+  AlertCircle,
 } from 'lucide-react'
 
 export const CandidateResumePage = () => {
@@ -25,6 +22,7 @@ export const CandidateResumePage = () => {
   const [uploading, setUploading] = useState(false)
   const [newSkill, setNewSkill] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,14 +45,16 @@ export const CandidateResumePage = () => {
 
     setUploading(true)
     setUploadSuccess(false)
+    setUploadError(null)
     try {
-      // Simulate extraction pipeline
+      // Simulate upload + parsing delay
       await new Promise((r) => setTimeout(r, 1200))
       const updated = await candidateService.uploadResume(file)
       setProfile((prev) => ({ ...prev, ...updated }))
       setUploadSuccess(true)
       setTimeout(() => setUploadSuccess(false), 4000)
     } catch (err) {
+      setUploadError('Resume upload failed. Please try again.')
       console.error(err)
     } finally {
       setUploading(false)
@@ -63,8 +63,13 @@ export const CandidateResumePage = () => {
 
   const handleAddSkill = (e) => {
     e.preventDefault()
-    if (!newSkill.trim()) return
-    const updatedSkills = [...(profile?.parsed_skills || []), newSkill.trim()]
+    const skill = newSkill.trim()
+    if (!skill) return
+    if (profile?.parsed_skills?.includes(skill)) {
+      setNewSkill('')
+      return
+    }
+    const updatedSkills = [...(profile?.parsed_skills || []), skill]
     setProfile({ ...profile, parsed_skills: updatedSkills })
     candidateService.updateProfile({ parsed_skills: updatedSkills })
     setNewSkill('')
@@ -78,183 +83,201 @@ export const CandidateResumePage = () => {
 
   if (loading) return <CardSkeleton />
 
+  const education = profile?.parsed_education || []
+  const experience = profile?.parsed_experience || []
+  const resumeFileName = profile?.resume_file || profile?.resume_file_name
+
   return (
-    <div className="space-y-8 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Resume & Extracted Competencies</h1>
-        <p className="text-xs text-muted-foreground">
-          Upload your resume to extract skills, degrees, and work history for explainable AI evaluation.
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="border-b border-border pb-6">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          Resume & Extracted Competencies
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Upload your resume to extract skills, degrees, and experience for AI evaluation. Extracted data is used in all match assessments.
         </p>
       </div>
 
-      {/* 1. RESUME UPLOAD CARD */}
-      <Card className="border-border shadow-xs">
-        <CardHeader className="border-b border-border/60 pb-4">
-          <CardTitle className="text-base font-bold">Resume Document Management</CardTitle>
-          <CardDescription className="text-xs">
-            Supports PDF and DOCX files up to 5MB. NLP extraction runs automatically upon upload.
-          </CardDescription>
-        </CardHeader>
+      {/* Main Grid: Upload + Parsed Profile */}
+      <div className="grid lg:grid-cols-12 gap-6 items-start">
+        {/* Left: Upload Workspace (5 Cols) */}
+        <div className="lg:col-span-5 rounded-lg border border-border bg-card p-5 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Resume Document
+          </h2>
 
-        <CardContent className="p-6 space-y-6">
+          {/* Upload Zone */}
+          <div className={`border-2 border-dashed rounded-lg p-6 text-center space-y-3 transition-colors ${
+            uploading ? 'border-foreground/30 bg-muted/20' : 'border-border hover:border-foreground/30'
+          }`}>
+            {uploading ? (
+              <Loader2 className="h-8 w-8 text-muted-foreground mx-auto animate-spin" />
+            ) : (
+              <UploadCloud className="h-8 w-8 text-muted-foreground mx-auto" />
+            )}
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-foreground block">
+                {uploading ? 'Parsing resume content...' : 'Upload or replace resume'}
+              </span>
+              <p className="text-[11px] text-muted-foreground">PDF or DOCX format (max 5MB)</p>
+            </div>
+
+            <label className="inline-block">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                className="text-xs h-8 cursor-pointer gap-1.5"
+                type="button"
+                onClick={() => document.getElementById('resume-file-input')?.click()}
+              >
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+                {uploading ? 'Processing...' : 'Select Document'}
+              </Button>
+              <input
+                id="resume-file-input"
+                type="file"
+                accept=".pdf,.docx,.doc"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
+          </div>
+
+          {/* Upload Feedback */}
           {uploadSuccess && (
-            <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <div className="p-3 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>Resume parsed successfully! Skills and experience timelines have been updated.</span>
+              <span>Resume parsed. Skills and entities have been updated.</span>
+            </div>
+          )}
+          {uploadError && (
+            <div className="p-3 rounded bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{uploadError}</span>
             </div>
           )}
 
-          {/* Current Active Resume Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/60 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <FileText className="h-5 w-5" />
+          {/* Active File Metadata */}
+          {resumeFileName && !uploading && (
+            <div className="p-3 rounded bg-muted/30 border border-border space-y-1.5 text-xs">
+              <div className="flex justify-between text-muted-foreground">
+                <span>File:</span>
+                <span className="font-mono text-foreground font-semibold truncate max-w-[160px]">
+                  {resumeFileName}
+                </span>
               </div>
-              <div>
-                <h4 className="text-xs font-bold text-foreground">{profile?.resume_file || 'Jane_Doe_Resume_2026.pdf'}</h4>
-                <p className="text-[11px] text-muted-foreground">
-                  Last parsed: {new Date(profile?.resume_uploaded_at || Date.now()).toLocaleDateString()}
-                </p>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Last updated:</span>
+                <span>{formatDate(profile?.resume_uploaded_at) || 'Recently'}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Parse status:</span>
+                <span className="text-emerald-600 font-medium">Processed</span>
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="flex items-center gap-2">
-              <label className="cursor-pointer">
-                <input
-                  type="file"
-                  accept=".pdf,.docx"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-                <Button variant="outline" size="sm" asChild disabled={uploading} className="gap-1.5 pointer-events-none">
-                  <span>
-                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                    {uploading ? 'Extracting NLP...' : 'Replace Resume'}
-                  </span>
-                </Button>
-              </label>
-            </div>
-          </div>
-
-          {/* Upload Dropzone */}
-          <label className="border-2 border-dashed border-border/80 hover:border-primary/60 rounded-xl p-8 text-center flex flex-col items-center justify-center bg-card hover:bg-muted/10 transition cursor-pointer block">
-            <input
-              type="file"
-              accept=".pdf,.docx"
-              onChange={handleFileUpload}
-              className="hidden"
-              disabled={uploading}
-            />
-            <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-              {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <UploadCloud className="h-6 w-6" />}
-            </div>
-            <p className="text-sm font-semibold text-foreground">
-              {uploading ? 'Parsing entities via spaCy...' : 'Click to browse or drag and drop your resume file'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">PDF or DOCX (Max 5MB)</p>
-          </label>
-        </CardContent>
-      </Card>
-
-      {/* 2. EXTRACTED SKILLS */}
-      <Card className="border-border shadow-xs">
-        <CardHeader className="border-b border-border/60 pb-4 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Extracted Skills & Competencies ({profile?.parsed_skills?.length || 0})
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Extracted via spaCy rule matching. You can add missing skills or remove false positives.
-            </CardDescription>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-6 space-y-6">
-          {/* Skill Tag Badges */}
-          <div className="flex flex-wrap gap-2">
-            {profile?.parsed_skills?.map((skill) => (
-              <span
-                key={skill}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-secondary text-secondary-foreground text-xs font-medium border border-border group"
-              >
-                {skill}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveSkill(skill)}
-                  className="text-muted-foreground hover:text-destructive transition ml-0.5"
-                  title="Remove skill"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+        {/* Right: Verified Skills & Extracted Entities (7 Cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Skills Management */}
+          <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Verified Skills ({profile?.parsed_skills?.length || 0})
+              </h2>
+              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border">
+                spaCy Extracted
               </span>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 min-h-[52px] p-3 rounded bg-muted/20 border border-border">
+              {profile?.parsed_skills?.length > 0 ? (
+                profile.parsed_skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-card text-foreground border border-border"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkill(skill)}
+                      className="text-muted-foreground hover:text-destructive transition"
+                      title={`Remove ${skill}`}
+                      aria-label={`Remove ${skill}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground self-center">
+                  No skills extracted yet. Upload a resume or add skills manually.
+                </p>
+              )}
+            </div>
+
+            {/* Add Skill Form */}
+            <form onSubmit={handleAddSkill} className="flex gap-2 pt-1">
+              <Input
+                placeholder="Add skill manually (e.g. GraphQL, Rust, AWS)..."
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                className="h-8 text-xs flex-1"
+              />
+              <Button type="submit" size="sm" variant="outline" className="text-xs h-8 gap-1 shrink-0">
+                <Plus className="h-3.5 w-3.5" /> Add
+              </Button>
+            </form>
           </div>
 
-          {/* Add Custom Skill Form */}
-          <form onSubmit={handleAddSkill} className="flex gap-2 max-w-md pt-2">
-            <Input
-              placeholder="Add skill (e.g. GraphQL, AWS, Kubernetes)..."
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              className="text-xs"
-            />
-            <Button type="submit" size="sm" variant="outline" className="gap-1 shrink-0">
-              <Plus className="h-3.5 w-3.5" /> Add Tag
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* 3. EXTRACTED EDUCATION & EXPERIENCE */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Education */}
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-primary" /> Extracted Education
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 space-y-4">
-            {profile?.parsed_education?.length > 0 ? (
-              profile.parsed_education.map((edu, i) => (
-                <div key={i} className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-1">
-                  <h4 className="text-xs font-bold text-foreground">{edu.degree}</h4>
-                  <p className="text-xs text-muted-foreground">{edu.institution}</p>
-                  <span className="text-[10px] text-primary font-mono">{edu.year} • {edu.grade}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-muted-foreground italic">No education entries extracted.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Experience */}
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-primary" /> Extracted Work Experience
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 space-y-4">
-            {profile?.parsed_experience?.length > 0 ? (
-              profile.parsed_experience.map((exp, i) => (
-                <div key={i} className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-1">
-                  <div className="flex justify-between items-start">
-                    <h4 className="text-xs font-bold text-foreground">{exp.title}</h4>
-                    <span className="text-[10px] text-muted-foreground font-mono">{exp.duration}</span>
+          {/* Education Entities */}
+          <div className="rounded-lg border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <GraduationCap className="h-4 w-4" />
+              <span>Extracted Education</span>
+            </div>
+            {education.length > 0 ? (
+              <div className="space-y-3">
+                {education.map((edu, idx) => (
+                  <div key={idx} className="text-xs space-y-0.5">
+                    <p className="font-semibold text-foreground">{edu.degree}</p>
+                    <p className="text-muted-foreground">{edu.institution} &bull; {edu.year}</p>
+                    {edu.grade && <p className="text-muted-foreground text-[11px]">{edu.grade}</p>}
                   </div>
-                  <p className="text-xs text-primary font-medium">{exp.company}</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">{exp.description}</p>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <p className="text-xs text-muted-foreground italic">No work experience entries extracted.</p>
+              <p className="text-xs text-muted-foreground">No education records extracted.</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Experience Entities */}
+          <div className="rounded-lg border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <Briefcase className="h-4 w-4" />
+              <span>Extracted Experience</span>
+            </div>
+            {experience.length > 0 ? (
+              <div className="space-y-4 divide-y divide-border">
+                {experience.map((exp, idx) => (
+                  <div key={idx} className={`text-xs space-y-0.5 ${idx > 0 ? 'pt-3' : ''}`}>
+                    <p className="font-semibold text-foreground">{exp.title}</p>
+                    <p className="text-muted-foreground">{exp.company} &bull; {exp.duration}</p>
+                    {exp.description && (
+                      <p className="text-muted-foreground leading-relaxed text-[11px] mt-1">{exp.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No experience records extracted.</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

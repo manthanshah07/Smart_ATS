@@ -1,258 +1,352 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
-import { Badge } from '../../components/ui/badge'
 import {
-  Sparkles,
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
-  FileText,
-  Layers,
+  XCircle,
+  Briefcase,
   Users,
+  Layers,
   ShieldCheck,
-  TrendingUp,
-  Cpu,
-  ChevronRight,
   Search,
+  FileText,
+  SlidersHorizontal,
 } from 'lucide-react'
 
 export const LandingPage = () => {
   return (
-    <div className="space-y-24 py-6">
-      {/* 1. HERO SECTION */}
-      <section className="text-center space-y-8 max-w-4xl mx-auto px-4 pt-4 sm:pt-8">
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary shadow-2xs">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Explainable AI-Powered Applicant Tracking System</span>
+    <div className="space-y-24 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 1. HERO SECTION: Editorial 2-Column with Realistic Product Preview */}
+      <section className="pt-6 pb-12 grid lg:grid-cols-12 gap-12 items-center">
+        {/* Left Column: Direct Product Copy & CTAs */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded border border-border bg-muted/40 text-xs font-medium text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
+            Deterministic Candidate-to-Job Matching
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+            Hiring decisions backed by explainable relevance.
+          </h1>
+
+          <p className="text-base text-muted-foreground leading-relaxed">
+            SmartATS replaces unexplainable black-box screening with transparent candidate evaluation. Resumes are parsed into verified skills and dense semantic vectors, delivering honest match scores with full breakdown.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Link to="/jobs">
+              <Button size="lg" className="h-10 px-5 text-xs font-medium gap-2">
+                Explore Open Roles <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            <Link to="/register">
+              <Button variant="outline" size="lg" className="h-10 px-5 text-xs font-medium">
+                Create Account
+              </Button>
+            </Link>
+          </div>
+
+          {/* Value Micro-Points */}
+          <div className="pt-4 border-t border-border grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <span className="font-semibold text-foreground block">60 / 30 / 10 Formula</span>
+              <span className="text-muted-foreground text-[11px]">Semantic, skills & experience</span>
+            </div>
+            <div>
+              <span className="font-semibold text-foreground block">Zero Bias Engine</span>
+              <span className="text-muted-foreground text-[11px]">Strictly skill-grounded</span>
+            </div>
+            <div>
+              <span className="font-semibold text-foreground block">Recruiter Triage</span>
+              <span className="text-muted-foreground text-[11px]">Ranked candidate queues</span>
+            </div>
+          </div>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-          Find the Right Opportunity. <br className="hidden sm:inline" />
-          <span className="text-primary">Hire with Total Explainability.</span>
-        </h1>
-
-        <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          SmartATS extracts skills from resumes, generates 384-dimensional dense semantic embeddings, and ranks applicants with transparent, deterministic scoring.
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <Link to="/jobs">
-            <Button size="lg" className="gap-2 h-11 px-6 shadow-md">
-              Browse Open Positions <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="outline" size="lg" className="h-11 px-6">
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-
-        {/* Hero Interactive AI Preview Card */}
-        <div className="pt-8 text-left max-w-2xl mx-auto">
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 h-24 w-24 bg-primary/10 rounded-bl-full pointer-events-none" />
-
-            <div className="flex items-center justify-between pb-4 border-b border-border/70">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                  JD
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-foreground">Jane Doe &rarr; Full-Stack Python/React</h4>
-                  <p className="text-xs text-muted-foreground">TechPulse AI • San Francisco, CA</p>
-                </div>
+        {/* Right Column: Realistic Product UI Preview */}
+        <div className="lg:col-span-6">
+          <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden text-left">
+            {/* UI Window Header */}
+            <div className="px-4 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-border" />
+                <span className="h-2.5 w-2.5 rounded-full bg-border" />
+                <span className="h-2.5 w-2.5 rounded-full bg-border" />
+                <span className="ml-2 text-xs font-medium text-muted-foreground">Application Qualification Dossier</span>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">91.5%</div>
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">AI Match Score</p>
-              </div>
-            </div>
-
-            <div className="py-4 space-y-3">
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="p-2 rounded-lg bg-muted/40 border border-border/40">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Semantic (60%)</span>
-                  <span className="font-bold text-foreground">93.0%</span>
-                </div>
-                <div className="p-2 rounded-lg bg-muted/40 border border-border/40">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Skills (30%)</span>
-                  <span className="font-bold text-foreground">91.0%</span>
-                </div>
-                <div className="p-2 rounded-lg bg-muted/40 border border-border/40">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Experience (10%)</span>
-                  <span className="font-bold text-foreground">85.0%</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase">Matched Skills:</span>
-                <div className="flex flex-wrap gap-1">
-                  {['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs'].map((s) => (
-                    <Badge key={s} variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[11px]">
-                      {s}
-                    </Badge>
-                  ))}
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 text-[11px]">
-                    Missing: Kubernetes
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <Cpu className="h-3.5 w-3.5 text-primary" /> Model: Sentence Transformers (all-MiniLM-L6-v2)
+              <span className="text-[10px] font-mono uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded">
+                87% Match • Strong Fit
               </span>
-              <span className="text-emerald-600 font-medium">Explainable Result Verified</span>
+            </div>
+
+            {/* Candidate & Role Snapshot */}
+            <div className="p-5 border-b border-border space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Jane Doe &rarr; Senior Backend Engineer</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Applied to TechPulse AI • 4.5 Yrs Experience</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-mono text-muted-foreground">all-MiniLM-L6-v2</span>
+                </div>
+              </div>
+
+              {/* Formula Bar */}
+              <div className="grid grid-cols-3 gap-2 text-xs pt-1">
+                <div className="p-2 rounded bg-muted/30 border border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">Semantic (60%)</span>
+                  <span className="font-bold text-foreground">91%</span>
+                </div>
+                <div className="p-2 rounded bg-muted/30 border border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">Skills (30%)</span>
+                  <span className="font-bold text-foreground">82%</span>
+                </div>
+                <div className="p-2 rounded bg-muted/30 border border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">Experience (10%)</span>
+                  <span className="font-bold text-foreground">78%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Skills Matrix */}
+            <div className="p-5 space-y-4">
+              <div>
+                <span className="text-xs font-semibold text-foreground block mb-2">Verified Skill Alignment:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['Python', 'Django', 'REST APIs', 'PostgreSQL', 'Docker'].map((s) => (
+                    <span key={s} className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                      {s}
+                    </span>
+                  ))}
+                  <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-800 border border-amber-200 font-medium">
+                    Gap: Kubernetes
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <span className="text-xs font-semibold text-foreground block mb-1">Assessment Rationale:</span>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Candidate demonstrates comprehensive mastery in Python/Django backend systems with production PostgreSQL database optimization.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. HOW SMARTATS WORKS */}
-      <section className="container max-w-6xl mx-auto space-y-12 px-4">
-        <div className="text-center space-y-3">
-          <Badge variant="outline" className="text-xs uppercase font-mono">Pipeline Architecture</Badge>
-          <h2 className="text-3xl font-bold tracking-tight">How Explainable Matching Operates</h2>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            From raw resume document parsing to multi-dimensional vector similarity calculations.
+      {/* 2. HOW IT WORKS: Numbered 5-Step Process */}
+      <section id="how-it-works" className="py-12 border-t border-border space-y-12">
+        <div className="max-w-2xl">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">The Workflow</span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
+            How SmartATS matches talent and opportunities
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+            A continuous, transparent hiring loop designed for candidates seeking clarity and recruiters requiring rigor.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-border shadow-xs">
-            <CardHeader className="p-6">
-              <div className="h-10 w-10 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center mb-3 font-bold">
-                1
-              </div>
-              <CardTitle className="text-base">Document Parsing</CardTitle>
-              <CardDescription className="text-xs leading-relaxed mt-2">
-                Extracts clean text streams from uploaded PDF and DOCX files with size and structure validation.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border">
+            <span className="font-mono text-xs font-bold text-muted-foreground">01</span>
+            <h3 className="font-semibold text-sm text-foreground">Upload Resume</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Upload PDF or DOCX format. spaCy extracts skills, work history, and education entities.
+            </p>
+          </div>
 
-          <Card className="border-border shadow-xs">
-            <CardHeader className="p-6">
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3 font-bold">
-                2
-              </div>
-              <CardTitle className="text-base">NLP Extraction</CardTitle>
-              <CardDescription className="text-xs leading-relaxed mt-2">
-                spaCy entity recognition maps skills, degrees, and work durations against standardized taxonomies.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border">
+            <span className="font-mono text-xs font-bold text-muted-foreground">02</span>
+            <h3 className="font-semibold text-sm text-foreground">Explore Roles</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Search verified job openings across engineering, product, and leadership with full requirements.
+            </p>
+          </div>
 
-          <Card className="border-border shadow-xs">
-            <CardHeader className="p-6">
-              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3 font-bold">
-                3
-              </div>
-              <CardTitle className="text-base">Vector Encoding</CardTitle>
-              <CardDescription className="text-xs leading-relaxed mt-2">
-                Sentence Transformers encode normalized representations into 384-dimensional dense vectors.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border">
+            <span className="font-mono text-xs font-bold text-muted-foreground">03</span>
+            <h3 className="font-semibold text-sm text-foreground">Submit Application</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Apply in one click using your parsed profile snapshot and verified skill baseline.
+            </p>
+          </div>
 
-          <Card className="border-border shadow-xs">
-            <CardHeader className="p-6">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3 font-bold">
-                4
-              </div>
-              <CardTitle className="text-base">Explainable Scoring</CardTitle>
-              <CardDescription className="text-xs leading-relaxed mt-2">
-                Computes cosine similarity (60%), skill overlap (30%), and experience fit (10%) with explicit gap tags.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border">
+            <span className="font-mono text-xs font-bold text-muted-foreground">04</span>
+            <h3 className="font-semibold text-sm text-foreground">AI Evaluation</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Sentence transformers calculate cosine similarity, skill overlap, and experience alignment.
+            </p>
+          </div>
+
+          <div className="space-y-3 p-4 rounded-lg bg-card border border-border">
+            <span className="font-mono text-xs font-bold text-muted-foreground">05</span>
+            <h3 className="font-semibold text-sm text-foreground">Recruiter Review</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Recruiters triage applicants by composite match score, inspect skill gaps, and schedule interviews.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* 3. CANDIDATE & RECRUITER VALUE PROPOSITIONS */}
-      <section className="container max-w-6xl mx-auto grid md:grid-cols-2 gap-8 px-4">
-        {/* Candidate Box */}
-        <div className="rounded-2xl border border-border bg-card p-8 space-y-6 shadow-sm">
-          <div className="inline-flex items-center gap-2 rounded-lg bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600">
-            <Users className="h-4 w-4" /> For Job Seekers
-          </div>
-          <h3 className="text-2xl font-bold tracking-tight">Know Exactly Where You Stand</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            No more opaque ATS black-boxes. See your match score broken down into semantic alignment, recognized skills, and missing requirements before and after applying.
+      {/* 3. EXPLAINABLE AI ARCHITECTURE SECTION */}
+      <section id="architecture" className="py-12 border-t border-border grid lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-5 space-y-4">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Evaluation Engine</span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            The 60 / 30 / 10 scoring formula
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            Unlike generative AI tools that hallucinate ratings, SmartATS applies a deterministic mathematical composite score. Both candidates and recruiters see the exact formula behind every match.
           </p>
-          <ul className="space-y-3 text-xs text-foreground font-medium">
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Instant feedback on missing skills to improve your resume.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Real-time lifecycle tracking across all application stages.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Direct interview calendar invitations and preparation notes.</span>
-            </li>
-          </ul>
-          <Link to="/jobs" className="inline-block pt-2">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              Explore Open Jobs <ChevronRight className="h-4 w-4" />
-            </Button>
-          </Link>
+
+          <div className="pt-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="flex h-5 w-5 rounded bg-muted items-center justify-center text-xs font-bold text-foreground shrink-0 mt-0.5">
+                60%
+              </span>
+              <div>
+                <h4 className="text-xs font-semibold text-foreground">Semantic Similarity</h4>
+                <p className="text-xs text-muted-foreground">
+                  Dense cosine similarity between resume text and job description embeddings.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="flex h-5 w-5 rounded bg-muted items-center justify-center text-xs font-bold text-foreground shrink-0 mt-0.5">
+                30%
+              </span>
+              <div>
+                <h4 className="text-xs font-semibold text-foreground">Skill Overlap</h4>
+                <p className="text-xs text-muted-foreground">
+                  Jaccard set overlap between verified candidate skills and mandatory role tags.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="flex h-5 w-5 rounded bg-muted items-center justify-center text-xs font-bold text-foreground shrink-0 mt-0.5">
+                10%
+              </span>
+              <div>
+                <h4 className="text-xs font-semibold text-foreground">Experience Alignment</h4>
+                <p className="text-xs text-muted-foreground">
+                  Linear penalty/bonus based on candidate years of experience vs. role seniority.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Recruiter Box */}
-        <div className="rounded-2xl border border-border bg-card p-8 space-y-6 shadow-sm">
-          <div className="inline-flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-600">
-            <TrendingUp className="h-4 w-4" /> For Hiring Teams
+        <div className="lg:col-span-7 bg-muted/30 border border-border rounded-lg p-6 space-y-6">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Evaluation Matrix Comparison
+          </h3>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded bg-card border border-border space-y-2">
+              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-semibold text-xs">
+                <XCircle className="h-4 w-4" />
+                <span>Traditional ATS / Generative AI</span>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                <li>Keyword stuffing bias</li>
+                <li>Hallucinated match scores</li>
+                <li>Unexplainable rejection decisions</li>
+                <li>Black-box applicant filtering</li>
+              </ul>
+            </div>
+
+            <div className="p-4 rounded bg-card border border-border space-y-2">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>SmartATS Architecture</span>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                <li>Dense 384d semantic vectors</li>
+                <li>spaCy verified entity extraction</li>
+                <li>Auditable score breakdown</li>
+                <li>Equal transparency for all roles</li>
+              </ul>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold tracking-tight">Pre-Ranked, Qualified Applicant Queues</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Save dozens of hours screening hundreds of resumes. Let our deterministic NLP model surface the strongest candidates ranked by genuine skill and experience relevance.
-          </p>
-          <ul className="space-y-3 text-xs text-foreground font-medium">
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Automatic AI applicant ranking sorted by composite match score.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>One-click shortlist/reject actions with candidate notifications.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Structured interview scheduling with meeting links and feedback logs.</span>
-            </li>
-          </ul>
-          <Link to="/register" className="inline-block pt-2">
-            <Button size="sm" className="gap-1.5">
-              Start Hiring on SmartATS <ChevronRight className="h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </section>
 
-      {/* 4. CALL TO ACTION */}
-      <section className="container max-w-4xl mx-auto text-center bg-primary text-primary-foreground p-12 rounded-3xl space-y-6 shadow-xl">
-        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-          Ready to Experience Transparent Hiring?
+      {/* 4. WORKSPACE PORTALS SECTION */}
+      <section className="py-12 border-t border-border space-y-8">
+        <div className="max-w-2xl">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product Modules</span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
+            Built for candidates, recruiters, and administrators
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Candidate Card */}
+          <div className="p-6 rounded-lg bg-card border border-border space-y-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-foreground" />
+              <h3 className="font-semibold text-sm text-foreground">Candidate Portal</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Upload resumes, inspect extracted skills, browse opportunities in a two-column workspace, and track application timelines.
+            </p>
+            <Link to="/candidate/dashboard" className="inline-block text-xs font-medium text-foreground hover:underline">
+              Launch Candidate View &rarr;
+            </Link>
+          </div>
+
+          {/* Recruiter Card */}
+          <div className="p-6 rounded-lg bg-card border border-border space-y-4">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-foreground" />
+              <h3 className="font-semibold text-sm text-foreground">Recruiter Workspace</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Publish job postings, screen applicant queues sorted by composite score, inspect skill gaps, and schedule technical interviews.
+            </p>
+            <Link to="/recruiter/dashboard" className="inline-block text-xs font-medium text-foreground hover:underline">
+              Launch Recruiter View &rarr;
+            </Link>
+          </div>
+
+          {/* Admin Card */}
+          <div className="p-6 rounded-lg bg-card border border-border space-y-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-foreground" />
+              <h3 className="font-semibold text-sm text-foreground">Admin Console</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Verify company profiles, moderate public job listings, audit platform applications, and monitor recruitment pipeline analytics.
+            </p>
+            <Link to="/admin/dashboard" className="inline-block text-xs font-medium text-foreground hover:underline">
+              Launch Admin Console &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. FINAL EDITORIAL CALL TO ACTION */}
+      <section className="py-16 border-t border-border text-center space-y-6 max-w-3xl mx-auto">
+        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
+          Ready to experience explainable hiring?
         </h2>
-        <p className="text-primary-foreground/90 max-w-xl mx-auto text-sm leading-relaxed">
-          Join thousands of candidates and forward-thinking recruiters leveraging explainable AI recruitment.
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+          Create an account to browse open roles or test the recruiter evaluation workspace with our live interactive prototype.
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link to="/register">
-            <Button size="lg" variant="secondary" className="font-bold shadow-sm">
-              Get Started Now
+            <Button size="lg" className="h-10 px-6 text-xs font-medium">
+              Get Started Free
             </Button>
           </Link>
           <Link to="/jobs">
-            <Button size="lg" variant="outline" className="bg-primary/20 text-primary-foreground border-primary-foreground/30 hover:bg-primary/30">
-              Browse Open Jobs
+            <Button variant="outline" size="lg" className="h-10 px-6 text-xs font-medium">
+              Explore Active Jobs
             </Button>
           </Link>
         </div>

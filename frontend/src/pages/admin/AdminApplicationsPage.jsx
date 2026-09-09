@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { adminService } from '../../services/adminService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
-import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { TableSkeleton } from '../../components/ui/Skeleton'
-import { Layers, Sparkles } from 'lucide-react'
 
 export const AdminApplicationsPage = () => {
   const [applications, setApplications] = useState([])
@@ -28,44 +25,50 @@ export const AdminApplicationsPage = () => {
   if (loading) return <TableSkeleton rows={5} />
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Global Applications Audit</h1>
-        <p className="text-xs text-muted-foreground">Comprehensive system log of candidate submissions and explainable AI scores.</p>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="border-b border-border pb-6">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          Platform Applications Audit Log
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          System audit log of candidate submissions and deterministic AI match score records.
+        </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider border-b border-border/80">
-              <tr>
-                <th className="p-4">Candidate</th>
-                <th className="p-4">Job Role</th>
-                <th className="p-4">Company</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">AI Fit Score</th>
-                <th className="p-4">Applied Date</th>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-border bg-muted/20 text-muted-foreground">
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">Candidate</th>
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">Position</th>
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">Employer</th>
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">Status</th>
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">AI Match Score</th>
+                <th className="py-3 px-4 font-semibold uppercase text-[10px]">Submission Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {applications.map((app) => (
-                <tr key={app.id} className="hover:bg-muted/30 transition">
-                  <td className="p-4 font-bold text-foreground">{app.candidate_name}</td>
-                  <td className="p-4 text-foreground">{app.job_title}</td>
-                  <td className="p-4 text-muted-foreground">{app.company_name}</td>
-                  <td className="p-4">
+                <tr key={app.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="py-3.5 px-4 font-semibold text-foreground">{app.candidate_name}</td>
+                  <td className="py-3.5 px-4 text-foreground">{app.job_title}</td>
+                  <td className="py-3.5 px-4 text-muted-foreground">{app.company_name}</td>
+                  <td className="py-3.5 px-4 whitespace-nowrap">
                     <StatusBadge type="application" status={app.status} />
                   </td>
-                  <td className="p-4">
+                  <td className="py-3.5 px-4 whitespace-nowrap">
                     {app.ai_analysis ? (
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 font-mono">
                         {Math.round(app.ai_analysis.overall_match_score)}%
                       </span>
                     ) : (
                       <span className="text-muted-foreground italic">Pending</span>
                     )}
                   </td>
-                  <td className="p-4 text-muted-foreground">{new Date(app.applied_at).toLocaleDateString()}</td>
+                  <td className="py-3.5 px-4 text-muted-foreground whitespace-nowrap">
+                    {new Date(app.applied_at).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,60 +1,100 @@
 import React, { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { CheckCircle2, Bell, Shield, Save } from 'lucide-react'
+import { Input } from '../../components/ui/Input'
+import { CheckCircle2, Save } from 'lucide-react'
 
 export const RecruiterSettingsPage = () => {
-  const [success, setSuccess] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSave = (e) => {
+  const handlePasswordChange = (e) => {
     e.preventDefault()
-    setSuccess(true)
-    setTimeout(() => setSuccess(false), 3000)
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match.')
+      return
+    }
+    setError('')
+    setSaved(true)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setTimeout(() => setSaved(false), 3000)
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Recruiter Hiring Settings</h1>
-        <p className="text-xs text-muted-foreground">Configure applicant notifications and ranking preferences.</p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="border-b border-border pb-6">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          Recruiter Security & Preferences
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Manage your recruiter access credentials, MFA preferences, and organization roles.
+        </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Bell className="h-4 w-4 text-primary" /> Hiring Pipeline Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4 text-xs">
-            {success && (
-              <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 border border-emerald-500/20">
-                <CheckCircle2 className="h-4 w-4" /> Preferences saved!
-              </div>
-            )}
+      {saved && (
+        <div className="p-3 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>Password updated successfully.</span>
+        </div>
+      )}
 
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded border-input text-primary mt-0.5" />
-              <div>
-                <span className="font-semibold text-foreground block">High AI Match Alert (Match &gt; 85%)</span>
-                <span className="text-muted-foreground">Send an immediate high-priority alert when an exceptional candidate applies.</span>
-              </div>
-            </label>
+      {error && (
+        <div className="p-3 rounded bg-rose-50 border border-rose-200 text-xs text-rose-800">
+          {error}
+        </div>
+      )}
 
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded border-input text-primary mt-0.5" />
-              <div>
-                <span className="font-semibold text-foreground block">Daily Applicant Digest</span>
-                <span className="text-muted-foreground">Receive a summary of all new candidate resumes received across your jobs.</span>
-              </div>
-            </label>
-          </CardContent>
-          <CardFooter className="border-t border-border/60 py-3 px-6 flex justify-end">
-            <Button type="submit" size="sm" className="gap-1.5">
-              <Save className="h-3.5 w-3.5" /> Save Settings
-            </Button>
-          </CardFooter>
-        </Card>
+      <form onSubmit={handlePasswordChange} className="space-y-6">
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
+            Change Password
+          </h2>
+
+          <div className="space-y-3 max-w-md">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Current Password</label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">New Password</label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Confirm New Password</label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" className="text-xs h-9 px-5 gap-1.5 font-medium">
+            <Save className="h-3.5 w-3.5" /> Update Password
+          </Button>
+        </div>
       </form>
     </div>
   )

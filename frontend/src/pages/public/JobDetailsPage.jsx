@@ -3,9 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { jobService } from '../../services/jobService'
 import { applicationService } from '../../services/applicationService'
 import { useAuth } from '../../hooks/useAuth'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { Modal } from '../../components/ui/Modal'
 import { CardSkeleton } from '../../components/ui/Skeleton'
@@ -15,19 +13,17 @@ import {
   MapPin,
   Briefcase,
   Clock,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
   ArrowLeft,
-  Send,
+  CheckCircle2,
   FileText,
   Loader2,
+  Calendar,
 } from 'lucide-react'
 
 export const JobDetailsPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, isCandidate, isAuthenticated } = useAuth()
+  const { isCandidate, isAuthenticated } = useAuth()
 
   const [job, setJob] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -61,7 +57,7 @@ export const JobDetailsPage = () => {
       setTimeout(() => {
         setApplyModalOpen(false)
         navigate(`/candidate/applications/${createdApp.id}`)
-      }, 1200)
+      }, 1000)
     } catch (err) {
       console.error(err)
     } finally {
@@ -73,159 +69,187 @@ export const JobDetailsPage = () => {
   if (error || !job) return <ErrorState message={error || 'Job not found'} />
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Back Link */}
-      <Link to="/jobs" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition font-medium">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to all jobs
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Back to Job Browser */}
+      <Link
+        to="/jobs"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition font-medium"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to open roles
       </Link>
 
-      {/* Main Job Banner */}
-      <Card className="border-border shadow-xs overflow-hidden">
-        <div className="p-6 sm:p-8 bg-muted/20 border-b border-border/60">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{job.title}</h1>
+      {/* Main Job Dossier */}
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        {/* Header Block */}
+        <div className="p-6 sm:p-8 border-b border-border bg-muted/20">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">{job.title}</h1>
                 <StatusBadge type="job" status={job.status} />
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1 font-semibold text-foreground">
-                  <Building className="h-4 w-4 text-muted-foreground" />
+                <span className="font-semibold text-foreground flex items-center gap-1">
+                  <Building className="h-3.5 w-3.5 text-muted-foreground" />
                   {job.company_name}
                 </span>
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  {job.location}
+                  <MapPin className="h-3.5 w-3.5" /> {job.location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" />
-                  {job.job_type.replace('_', ' ')}
+                  <Briefcase className="h-3.5 w-3.5" /> {job.job_type?.replace('_', ' ')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Min. {job.experience_min_years} Years Experience
+                  <Clock className="h-3.5 w-3.5" /> Min {job.min_experience_years || 2}+ Yrs
                 </span>
               </div>
             </div>
 
-            {/* Apply Action CTA */}
+            {/* Apply Action */}
             <div className="shrink-0">
-              {job.status === 'CLOSED' ? (
-                <Button disabled className="w-full sm:w-auto">
-                  Position Closed
-                </Button>
-              ) : isAuthenticated && isCandidate ? (
-                <Button size="lg" onClick={() => setApplyModalOpen(true)} className="w-full sm:w-auto gap-2 shadow-md">
-                  Apply for Position <Send className="h-4 w-4" />
-                </Button>
-              ) : isAuthenticated ? (
-                <Button variant="outline" disabled className="text-xs">
-                  Recruiter / Admin View
-                </Button>
-              ) : (
-                <Link to="/login" state={{ from: `/jobs/${job.id}` }}>
-                  <Button size="lg" className="w-full sm:w-auto gap-2 shadow-md">
-                    Sign In to Apply <ArrowLeft className="h-4 w-4 rotate-180" />
-                  </Button>
-                </Link>
-              )}
+              <Button size="lg" onClick={() => setApplyModalOpen(true)} className="text-xs h-10 px-6 font-medium">
+                Apply for Position
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Content Body */}
-        <CardContent className="p-6 sm:p-8 space-y-8">
-          {/* Skill Requirements Grid */}
-          <div className="grid md:grid-cols-2 gap-6 p-4 rounded-xl bg-muted/30 border border-border/50">
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                Required Core Skills ({job.required_skills.length})
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {job.required_skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
+        {/* Content Layout */}
+        <div className="p-6 sm:p-8 grid md:grid-cols-12 gap-8">
+          {/* Main Description & Skills (8 Cols) */}
+          <div className="md:col-span-8 space-y-8">
+            <div className="space-y-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Position Overview
+              </h2>
+              <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-line">
+                {job.description}
+              </p>
+            </div>
+
+            {job.required_skills && job.required_skills.length > 0 && (
+              <div className="space-y-3 pt-6 border-t border-border">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Required Core Competencies
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.required_skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2.5 py-1 rounded text-xs font-medium bg-muted text-foreground border border-border"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {job.preferred_skills && job.preferred_skills.length > 0 && (
+              <div className="space-y-3 pt-6 border-t border-border">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Preferred Qualifications
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.preferred_skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2.5 py-1 rounded text-xs font-medium bg-muted/40 text-muted-foreground border border-border"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar Metadata (4 Cols) */}
+          <div className="md:col-span-4 space-y-6">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-3">
+              <h3 className="font-semibold text-xs text-foreground">Role Specifications</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Department</span>
+                  <span className="font-medium text-foreground">{job.department || 'Engineering'}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Experience Level</span>
+                  <span className="font-medium text-foreground">{job.experience_level || 'Mid-Senior'}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Location Type</span>
+                  <span className="font-medium text-foreground">{job.location}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Posted Date</span>
+                  <span className="font-medium text-foreground">{job.posted_at || 'Recent'}</span>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Preferred / Nice-to-Have Skills ({job.preferred_skills.length})
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {job.preferred_skills.map((skill) => (
-                  <Badge key={skill} variant="outline" className="text-xs bg-background">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
+            <div className="p-4 rounded-lg bg-card border border-border space-y-2 text-xs">
+              <h3 className="font-semibold text-foreground">About {job.company_name}</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {job.company_description ||
+                  'Verified enterprise employer hiring through SmartATS explainable recruitment platform.'}
+              </p>
             </div>
           </div>
-
-          {/* Job Description Text */}
-          <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground tracking-tight">Role Description & Specifications</h3>
-            <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-line text-muted-foreground leading-relaxed text-sm">
-              {job.description}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Apply Modal */}
       <Modal
         isOpen={applyModalOpen}
-        onClose={() => setApplyModalOpen(false)}
-        title="Confirm Application Submission"
-        description={`Applying to ${job.title} at ${job.company_name}`}
-        footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setApplyModalOpen(false)} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleApply} disabled={submitting || applySuccess} className="gap-2">
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Submitting Application...
-                </>
-              ) : applySuccess ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Application Submitted!
-                </>
-              ) : (
-                <>
-                  Submit Application <Send className="h-3.5 w-3.5" />
-                </>
-              )}
-            </Button>
-          </>
-        }
+        onClose={() => !submitting && setApplyModalOpen(false)}
+        title={`Apply to ${job.title}`}
       >
-        <div className="space-y-4">
-          <div className="rounded-lg border border-border p-4 bg-muted/20 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <FileText className="h-4 w-4 text-primary" />
-              <span>Resume to be Attached</span>
+        <div className="space-y-4 text-xs">
+          {applySuccess ? (
+            <div className="py-6 text-center space-y-2">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
+              <h3 className="font-bold text-sm text-foreground">Application Submitted</h3>
+              <p className="text-muted-foreground">
+                Your profile was transmitted to {job.company_name}. Redirecting to your application record...
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground font-mono bg-background p-2 rounded border border-border">
-              {user?.profile?.resume_file || 'Jane_Doe_Resume_2026.pdf'}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Your profile resume snapshot will be submitted to the hiring team.
-            </p>
-          </div>
+          ) : (
+            <>
+              <div className="p-3 rounded bg-muted/30 border border-border space-y-1">
+                <span className="font-semibold text-foreground block">{job.title}</span>
+                <p className="text-muted-foreground">
+                  {job.company_name} &bull; {job.location}
+                </p>
+              </div>
 
-          <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-start gap-2">
-            <Sparkles className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
-            <span>
-              AI match evaluation will be computed after submission using our explainable matching pipeline.
-            </span>
-          </div>
+              <p className="text-muted-foreground leading-relaxed">
+                By submitting, your parsed resume profile and verified skills will be evaluated against this job description. Both you and the hiring team will receive an explainable match assessment report.
+              </p>
+
+              <div className="pt-3 border-t border-border flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setApplyModalOpen(false)}
+                  disabled={submitting}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleApply} disabled={submitting} className="text-xs gap-1.5">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting...
+                    </>
+                  ) : (
+                    'Confirm Application'
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>

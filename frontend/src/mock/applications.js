@@ -1,8 +1,10 @@
 import { MOCK_AI_ANALYSIS_RECORDS } from './ai/mockAIAnalysis'
 
 /**
- * Mock applications data with timeline milestones and reference sample AIAnalysis records.
- * Explicitly structures historical demo records vs new pending applications.
+ * Mock applications data.
+ * Each application has a top-level `match_score` field (derived from ai_analysis)
+ * so tables can display scores without drilling into ai_analysis.
+ * The ai_analysis object remains the authoritative source for the full breakdown.
  */
 export const MOCK_APPLICATIONS = [
   {
@@ -16,20 +18,26 @@ export const MOCK_APPLICATIONS = [
     candidate_email: 'jane.doe@example.com',
     candidate_headline: 'Senior Full-Stack Python & React Engineer',
     candidate_location: 'San Francisco, CA',
+    candidate_experience_years: 3.5,
     status: 'INTERVIEW_SCHEDULED',
     applied_at: '2026-08-25T14:20:00Z',
     updated_at: '2026-08-29T10:00:00Z',
+    // Convenience field for table display — mirrors ai_analysis.overall_match_score
+    match_score: 91.5,
     resume_snapshot: {
       headline: 'Senior Full-Stack Python & React Engineer',
       skills: ['Python', 'Django', 'React', 'JavaScript', 'PostgreSQL', 'Docker', 'REST APIs', 'Git', 'Redis'],
-      education: [{ degree: 'B.S. Computer Science', institution: 'UC Berkeley', year: '2019-2023' }],
-      experience: [{ title: 'Full-Stack Developer', company: 'Nexus Labs', duration: '2023-Present' }],
+      education: [{ degree: 'B.S. Computer Science', institution: 'UC Berkeley', year: '2019–2023' }],
+      experience: [
+        { title: 'Full-Stack Developer', company: 'Nexus Software Labs', duration: '2023–Present (2+ yrs)', description: 'Designed high-throughput REST APIs and React dashboards handling 50k+ daily queries.' },
+        { title: 'Software Engineering Intern', company: 'CloudMatrix', duration: 'Summer 2022 (3 mos)', description: 'Optimized PostgreSQL queries, improving query latency by 35%.' },
+      ],
     },
     timeline: [
-      { step: 'APPLIED', title: 'Application Submitted', date: 'Aug 25, 2026 at 2:20 PM', done: true },
-      { step: 'REVIEWING', title: 'Recruiter Screening', date: 'Aug 26, 2026 at 11:15 AM', done: true },
-      { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: 'Aug 27, 2026 at 4:30 PM', done: true },
-      { step: 'INTERVIEW_SCHEDULED', title: 'Technical Interview Confirmed', date: 'Aug 29, 2026 at 10:00 AM', done: true },
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-25T14:20:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-26T11:15:00Z', done: true },
+      { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: '2026-08-27T16:30:00Z', done: true },
+      { step: 'INTERVIEW_SCHEDULED', title: 'Technical Interview Confirmed', date: '2026-08-29T10:00:00Z', done: true },
     ],
     interview_id: 1,
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_high_match,
@@ -45,16 +53,22 @@ export const MOCK_APPLICATIONS = [
     candidate_email: 'jane.doe@example.com',
     candidate_headline: 'Senior Full-Stack Python & React Engineer',
     candidate_location: 'San Francisco, CA',
+    candidate_experience_years: 3.5,
     status: 'REVIEWING',
     applied_at: '2026-08-26T09:15:00Z',
     updated_at: '2026-08-27T16:00:00Z',
+    match_score: 76.0,
     resume_snapshot: {
       headline: 'Senior Full-Stack Python & React Engineer',
       skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'REST APIs', 'Redis'],
+      education: [{ degree: 'B.S. Computer Science', institution: 'UC Berkeley', year: '2019–2023' }],
+      experience: [
+        { title: 'Full-Stack Developer', company: 'Nexus Software Labs', duration: '2023–Present', description: 'Backend API design and database optimization.' },
+      ],
     },
     timeline: [
-      { step: 'APPLIED', title: 'Application Submitted', date: 'Aug 26, 2026 at 9:15 AM', done: true },
-      { step: 'REVIEWING', title: 'Recruiter Screening', date: 'Aug 27, 2026 at 4:00 PM', done: true },
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-26T09:15:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-27T16:00:00Z', done: true },
     ],
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_moderate_match,
   },
@@ -69,30 +83,58 @@ export const MOCK_APPLICATIONS = [
     candidate_email: 'jane.doe@example.com',
     candidate_headline: 'Senior Full-Stack Python & React Engineer',
     candidate_location: 'San Francisco, CA',
+    candidate_experience_years: 3.5,
     status: 'SHORTLISTED',
     applied_at: '2026-08-24T18:00:00Z',
     updated_at: '2026-08-28T14:10:00Z',
+    match_score: 84.0,
+    resume_snapshot: {
+      headline: 'Senior Full-Stack Python & React Engineer',
+      skills: ['React', 'JavaScript', 'TailwindCSS', 'TanStack Query', 'REST APIs', 'Python', 'Django'],
+      education: [{ degree: 'B.S. Computer Science', institution: 'UC Berkeley', year: '2019–2023' }],
+      experience: [
+        { title: 'Full-Stack Developer', company: 'Nexus Software Labs', duration: '2023–Present', description: 'React dashboard development and component architecture.' },
+      ],
+    },
     timeline: [
-      { step: 'APPLIED', title: 'Application Submitted', date: 'Aug 24, 2026 at 6:00 PM', done: true },
-      { step: 'REVIEWING', title: 'Recruiter Screening', date: 'Aug 26, 2026 at 10:00 AM', done: true },
-      { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: 'Aug 28, 2026 at 2:10 PM', done: true },
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-24T18:00:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-26T10:00:00Z', done: true },
+      { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: '2026-08-28T14:10:00Z', done: true },
     ],
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_frontend_match,
   },
-  // Candidates for Recruiter Job Ranking Queue Demo
+  // Candidates in Recruiter Job Ranking Queue Demo
   {
     id: 104,
     job_id: 1,
     job_title: 'Senior Full-Stack Python & React Engineer',
     company_name: 'TechPulse AI',
+    company_location: 'San Francisco, CA (Hybrid)',
     candidate_id: 102,
     candidate_name: 'Marcus Chen',
     candidate_email: 'marcus.chen@gmail.com',
     candidate_headline: 'Staff Python/Cloud Architect',
     candidate_location: 'Seattle, WA',
+    candidate_experience_years: 6.5,
     status: 'SHORTLISTED',
     applied_at: '2026-08-26T11:00:00Z',
     updated_at: '2026-08-28T09:00:00Z',
+    match_score: 94.0,
+    resume_snapshot: {
+      headline: 'Staff Python/Cloud Architect',
+      skills: ['Python', 'Django', 'React', 'PostgreSQL', 'Docker', 'Kubernetes', 'CI/CD', 'Redis', 'AWS'],
+      education: [{ degree: 'M.S. Computer Science', institution: 'University of Washington', year: '2016–2018' }],
+      experience: [
+        { title: 'Staff Python Engineer', company: 'Amazon Web Services', duration: '2020–Present', description: 'Architected distributed microservices with Django and Kubernetes.' },
+        { title: 'Senior Backend Developer', company: 'Stripe', duration: '2018–2020', description: 'Payment processing APIs at scale.' },
+      ],
+    },
+    timeline: [
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-26T11:00:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-27T14:00:00Z', done: true },
+      { step: 'SHORTLISTED', title: 'Candidate Shortlisted', date: '2026-08-28T09:00:00Z', done: true },
+    ],
+    interview_id: 2,
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_staff_match,
   },
   {
@@ -100,14 +142,29 @@ export const MOCK_APPLICATIONS = [
     job_id: 1,
     job_title: 'Senior Full-Stack Python & React Engineer',
     company_name: 'TechPulse AI',
+    company_location: 'San Francisco, CA (Hybrid)',
     candidate_id: 103,
     candidate_name: 'Emily Watson',
     candidate_email: 'emily.watson@tech.org',
     candidate_headline: 'Frontend Engineer transitioning to Full Stack',
     candidate_location: 'Austin, TX',
+    candidate_experience_years: 2.5,
     status: 'REVIEWING',
     applied_at: '2026-08-27T16:30:00Z',
     updated_at: '2026-08-28T12:00:00Z',
+    match_score: 68.5,
+    resume_snapshot: {
+      headline: 'Frontend Engineer transitioning to Full Stack',
+      skills: ['React', 'JavaScript', 'REST APIs', 'Git', 'HTML/CSS', 'TailwindCSS'],
+      education: [{ degree: 'B.S. Information Systems', institution: 'UT Austin', year: '2018–2022' }],
+      experience: [
+        { title: 'Frontend Engineer', company: 'Shopify', duration: '2022–Present', description: 'React component development for e-commerce storefront.' },
+      ],
+    },
+    timeline: [
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-27T16:30:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-28T12:00:00Z', done: true },
+    ],
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_partial_match,
   },
   {
@@ -115,14 +172,30 @@ export const MOCK_APPLICATIONS = [
     job_id: 1,
     job_title: 'Senior Full-Stack Python & React Engineer',
     company_name: 'TechPulse AI',
+    company_location: 'San Francisco, CA (Hybrid)',
     candidate_id: 104,
     candidate_name: 'David Kim',
     candidate_email: 'david.kim@example.com',
     candidate_headline: 'Junior Web Developer',
     candidate_location: 'Chicago, IL',
+    candidate_experience_years: 1.0,
     status: 'REJECTED',
     applied_at: '2026-08-21T08:00:00Z',
     updated_at: '2026-08-24T10:00:00Z',
+    match_score: 48.0,
+    resume_snapshot: {
+      headline: 'Junior Web Developer',
+      skills: ['JavaScript', 'HTML/CSS', 'Git', 'React (basic)'],
+      education: [{ degree: 'B.A. Digital Media', institution: 'Columbia College Chicago', year: '2020–2024' }],
+      experience: [
+        { title: 'Web Developer Intern', company: 'Local Agency', duration: '2024 (6 mos)', description: 'Built landing pages and maintained WordPress sites.' },
+      ],
+    },
+    timeline: [
+      { step: 'APPLIED', title: 'Application Submitted', date: '2026-08-21T08:00:00Z', done: true },
+      { step: 'REVIEWING', title: 'Recruiter Screening', date: '2026-08-22T10:00:00Z', done: true },
+      { step: 'REJECTED', title: 'Application Not Selected', date: '2026-08-24T10:00:00Z', done: true },
+    ],
     ai_analysis: MOCK_AI_ANALYSIS_RECORDS.sample_low_match,
   },
 ]

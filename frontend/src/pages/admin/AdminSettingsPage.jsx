@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
-import { CheckCircle2, Cpu, Save, Info, Sliders } from 'lucide-react'
+import { CheckCircle2, Save, SlidersHorizontal, Info } from 'lucide-react'
 
 export const AdminSettingsPage = () => {
   const [success, setSuccess] = useState(false)
@@ -14,83 +12,72 @@ export const AdminSettingsPage = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">System Configuration & Governance</h1>
-        <p className="text-xs text-muted-foreground">Review planned AI scoring architecture parameters and platform security toggles.</p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="border-b border-border pb-6">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          System Parameters & Algorithm Calibration
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Review locked mathematical weights governing the candidate qualification and ranking engine.
+        </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-3 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Sliders className="h-4 w-4 text-primary" /> Configured AI Scoring Architecture Weights
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Specification weights locking the multi-factor evaluation pipeline.
-              </CardDescription>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Configured AI Scoring Weights (Locked 60 / 30 / 10 Architecture)
+            </h2>
+            <span className="text-[10px] font-mono uppercase bg-muted text-muted-foreground px-2 py-0.5 rounded">
+              Deterministic Spec
+            </span>
+          </div>
+
+          {success && (
+            <div className="p-3 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>System preferences saved.</span>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono bg-background">
-              Architecture Spec
-            </Badge>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4 text-xs">
-            {success && (
-              <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 border border-emerald-500/20">
-                <CheckCircle2 className="h-4 w-4" /> Prototype configuration preferences saved!
-              </div>
-            )}
+          )}
 
-            <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground flex items-start gap-2">
-              <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-              <span>
-                These scoring weights represent the locked mathematical formula (Semantic 60% + Skills 30% + Experience 10%). They will govern the Sentence Transformers pipeline when backend AI services are integrated.
-              </span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-3">
-              <div className="flex items-center justify-between font-semibold text-foreground">
-                <div className="space-y-0.5">
-                  <span className="block">Semantic Similarity Weight</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">384-dimensional Sentence Transformer vector cosine similarity</span>
-                </div>
-                <span className="font-mono text-sm font-bold text-primary">60%</span>
+          <div className="space-y-3 pt-2">
+            <div className="p-3.5 rounded bg-muted/20 border border-border space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-foreground">Semantic Similarity Factor</span>
+                <span className="font-bold text-foreground font-mono">60%</span>
               </div>
-
-              <div className="flex items-center justify-between font-semibold text-foreground pt-2 border-t border-border/40">
-                <div className="space-y-0.5">
-                  <span className="block">Skill Taxonomy Overlap Weight</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">spaCy entity extraction and exact/fuzzy taxonomy matching</span>
-                </div>
-                <span className="font-mono text-sm font-bold text-emerald-600">30%</span>
-              </div>
-
-              <div className="flex items-center justify-between font-semibold text-foreground pt-2 border-t border-border/40">
-                <div className="space-y-0.5">
-                  <span className="block">Experience Alignment Weight</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">Demonstrated years of experience vs required threshold</span>
-                </div>
-                <span className="font-mono text-sm font-bold text-purple-600">10%</span>
-              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Cosine similarity across 384-dimensional sentence transformer embeddings (<code className="font-mono text-[10px]">all-MiniLM-L6-v2</code>).
+              </p>
             </div>
 
-            <div className="pt-2">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" defaultChecked className="rounded border-input text-primary mt-0.5" />
-                <div>
-                  <span className="font-semibold text-foreground block">Resume Formatting Verification</span>
-                  <span className="text-muted-foreground">Validate extracted entity structures before passing to vector similarity stage.</span>
-                </div>
-              </label>
+            <div className="p-3.5 rounded bg-muted/20 border border-border space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-foreground">Skill Overlap Factor</span>
+                <span className="font-bold text-foreground font-mono">30%</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Jaccard overlap between spaCy-extracted candidate skills and role required competencies.
+              </p>
             </div>
-          </CardContent>
-          <CardFooter className="border-t border-border/60 py-3 px-6 flex justify-end">
-            <Button type="submit" size="sm" className="gap-1.5">
-              <Save className="h-3.5 w-3.5" /> Save Preferences
-            </Button>
-          </CardFooter>
-        </Card>
+
+            <div className="p-3.5 rounded bg-muted/20 border border-border space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-foreground">Experience Seniority Factor</span>
+                <span className="font-bold text-foreground font-mono">10%</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Seniority threshold delta calculated from candidate career history vs minimum requirement.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" className="text-xs h-9 px-5 gap-1.5 font-medium">
+            <Save className="h-3.5 w-3.5" /> Save Configuration
+          </Button>
+        </div>
       </form>
     </div>
   )

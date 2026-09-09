@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { AlertCircle, Lock, Mail, Loader2, ArrowRight } from 'lucide-react'
 
@@ -30,7 +29,6 @@ export const LoginPage = () => {
 
     try {
       const loggedInUser = await login(email.trim(), password)
-      // Centralized Role-Based Redirection
       if (loggedInUser.role === 'CANDIDATE') {
         navigate('/candidate/dashboard')
       } else if (loggedInUser.role === 'RECRUITER') {
@@ -55,97 +53,90 @@ export const LoginPage = () => {
   }
 
   return (
-    <Card className="w-full shadow-lg border-border/60">
-      <CardHeader className="space-y-1 text-left">
-        <CardTitle className="text-2xl font-bold tracking-tight">Sign In to SmartATS</CardTitle>
-        <CardDescription>
-          Enter your credentials to access your centralized hiring portal.
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          {successMessage && (
-            <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              {successMessage}
-            </div>
-          )}
+    <div className="w-full rounded-lg border border-border bg-card p-6 sm:p-8 space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">Sign In to SmartATS</h1>
+        <p className="text-xs text-muted-foreground">
+          Enter your credentials to access your candidate or recruiter workspace.
+        </p>
+      </div>
 
-          {error && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-xs font-medium text-destructive border border-destructive/20">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+      {successMessage && (
+        <div className="p-3 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+          {successMessage}
+        </div>
+      )}
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="email">
-              Email Address
+      {error && (
+        <div className="p-3 rounded bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1" htmlFor="email">
+            Email Address
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-foreground" htmlFor="password">
+              Password
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="password">
-                Password
-              </label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-primary hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full gap-2" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Signing In...
-              </>
-            ) : (
-              <>
-                Sign In <ArrowRight className="h-4 w-4" />
-              </>
-            )}
-          </Button>
-
-          <div className="text-center text-xs text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:underline">
-              Create an account
+            <Link to="/forgot-password" tabIndex={-1} className="text-[11px] text-muted-foreground hover:underline">
+              Forgot password?
             </Link>
           </div>
-        </CardFooter>
+          <div className="relative">
+            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          </div>
+        </div>
+
+        <Button type="submit" disabled={loading} className="w-full text-xs h-9 font-medium gap-2">
+          {loading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Signing In...
+            </>
+          ) : (
+            <>
+              Sign In <ArrowRight className="h-3.5 w-3.5" />
+            </>
+          )}
+        </Button>
       </form>
-    </Card>
+
+      <div className="pt-4 border-t border-border text-center text-xs text-muted-foreground">
+        Don't have an account?{' '}
+        <Link to="/register" className="font-semibold text-foreground hover:underline">
+          Create account
+        </Link>
+      </div>
+    </div>
   )
 }

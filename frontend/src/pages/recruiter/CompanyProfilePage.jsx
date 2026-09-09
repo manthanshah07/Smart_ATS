@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { recruiterService } from '../../services/recruiterService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card'
 import { Input } from '../../components/ui/Input'
 import { Textarea } from '../../components/ui/Textarea'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { CardSkeleton } from '../../components/ui/Skeleton'
 import { Building, Globe, MapPin, CheckCircle2, ShieldCheck, Save, Loader2 } from 'lucide-react'
 
@@ -62,111 +60,107 @@ export const CompanyProfilePage = () => {
   if (loading) return <CardSkeleton />
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Organization Profile</h1>
-        <p className="text-xs text-muted-foreground">Manage your company branding, industry tags, and verified employer status.</p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="border-b border-border pb-6 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Employer Organization Profile
+            </h1>
+            {company?.is_verified && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded">
+                <ShieldCheck className="h-3.5 w-3.5" /> Verified
+              </span>
+            )}
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Public company identity, domain verification, and branding details shown on job specs.
+          </p>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <Card className="border-border shadow-xs">
-          <CardHeader className="border-b border-border/60 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <Building className="h-4 w-4 text-primary" /> {company?.name}
-                </CardTitle>
-                <CardDescription className="text-xs">Company info visible to job seekers across SmartATS.</CardDescription>
-              </div>
-              {company?.is_verified && (
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Verified Employer
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
+      {savedSuccess && (
+        <div className="p-3 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>Company profile updated successfully.</span>
+        </div>
+      )}
 
-          <CardContent className="p-6 space-y-6">
-            {savedSuccess && (
-              <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 border border-emerald-500/20">
-                <CheckCircle2 className="h-4 w-4" /> Company details successfully updated!
-              </div>
-            )}
+      {/* Profile Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
+            Organization Identity
+          </h2>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="companyName">
-                  Company Name
-                </label>
-                <Input
-                  id="companyName"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Acme Technologies"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="website">
-                  Website URL
-                </label>
-                <Input
-                  id="website"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  placeholder="https://acme.io"
-                />
-              </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Company Name</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="h-9 text-xs"
+                required
+              />
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="industry">
-                  Industry / Sector
-                </label>
-                <Input
-                  id="industry"
-                  value={formData.industry}
-                  onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                  placeholder="Enterprise Software, AI, Cloud..."
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="location">
-                  Headquarters Location
-                </label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="San Francisco, CA"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Industry Domain</label>
+              <Input
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                className="h-9 text-xs"
+                placeholder="e.g. Artificial Intelligence / Cloud"
+              />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider" htmlFor="desc">
-                Company Description & Culture
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Headquarters Location</label>
+              <Input
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="h-9 text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1">Official Website</label>
+              <Input
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                className="h-9 text-xs"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-foreground mb-1">
+                Company Description & Mission
               </label>
               <Textarea
-                id="desc"
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your organization's mission, values, and engineering culture..."
+                className="text-xs"
               />
             </div>
-          </CardContent>
+          </div>
+        </div>
 
-          <CardFooter className="border-t border-border/60 py-4 px-6 flex justify-end">
-            <Button type="submit" disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Save Company Info
-            </Button>
-          </CardFooter>
-        </Card>
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" disabled={saving} className="text-xs h-9 px-5 gap-1.5 font-medium">
+            {saving ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5" /> Save Changes
+              </>
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   )

@@ -1,5 +1,7 @@
 /**
  * Mock interview scheduling data.
+ * All interviews include both scheduled_time (ISO) and human-readable
+ * scheduled_date / scheduled_time_display fields used in dashboard widgets.
  */
 export const MOCK_INTERVIEWS = [
   {
@@ -13,8 +15,13 @@ export const MOCK_INTERVIEWS = [
     candidate_email: 'jane.doe@example.com',
     interviewer_name: 'Alex Vance (Talent Lead) & Dr. Ryan Park (Principal Architect)',
     scheduled_time: '2026-09-10T15:00:00Z',
+    // Human-readable fields used in dashboard components
+    scheduled_date: 'Sep 10, 2026',
+    scheduled_time_display: '3:00 PM',
     duration_minutes: 60,
     interview_type: 'TECHNICAL',
+    interview_type_label: 'Technical Interview',
+    meeting_link: 'https://meet.google.com/abc-defg-hij',
     meeting_link_or_location: 'https://meet.google.com/abc-defg-hij',
     status: 'SCHEDULED',
     feedback: '',
@@ -32,8 +39,12 @@ export const MOCK_INTERVIEWS = [
     candidate_email: 'marcus.chen@gmail.com',
     interviewer_name: 'Alex Vance (Talent Lead)',
     scheduled_time: '2026-09-11T16:30:00Z',
+    scheduled_date: 'Sep 11, 2026',
+    scheduled_time_display: '4:30 PM',
     duration_minutes: 45,
     interview_type: 'HR',
+    interview_type_label: 'HR & Culture Assessment',
+    meeting_link: 'https://meet.google.com/uvw-xyza-bcd',
     meeting_link_or_location: 'https://meet.google.com/uvw-xyza-bcd',
     status: 'SCHEDULED',
     feedback: '',
@@ -51,8 +62,12 @@ export const MOCK_INTERVIEWS = [
     candidate_email: 'chloe.bennett@edu.org',
     interviewer_name: 'Alex Vance',
     scheduled_time: '2026-08-15T10:00:00Z',
+    scheduled_date: 'Aug 15, 2026',
+    scheduled_time_display: '10:00 AM',
     duration_minutes: 30,
     interview_type: 'TECHNICAL',
+    interview_type_label: 'Technical Interview',
+    meeting_link: 'Completed On-Site',
     meeting_link_or_location: 'Completed On-Site',
     status: 'COMPLETED',
     feedback: 'Strong problem-solving fundamentals. Good familiarity with Python data structures.',
