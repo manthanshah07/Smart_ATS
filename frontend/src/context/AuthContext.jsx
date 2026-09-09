@@ -4,8 +4,9 @@ import { MOCK_USERS } from '../mock/users'
 
 export const AuthContext = createContext(null)
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+
 export const AuthProvider = ({ children }) => {
-  // Initialize with Candidate mock user for instant prototype navigation, or localStorage session
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('smartats_user')
@@ -13,21 +14,34 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // ignore
     }
-    return MOCK_USERS.candidate
+    // Only default to mock user if explicitly in demo mode
+    return isDemoMode ? MOCK_USERS.candidate : null
   })
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async () => {
     const token = getAccessToken()
-    if (!token) return
+    if (!token && !isDemoMode) {
+      setLoading(false)
+      return
+    }
 
     try {
+      if (isDemoMode && !token) {
+        setLoading(false)
+        return
+      }
       const response = await apiClient.get('/auth/me/')
       setUser(response.data)
       localStorage.setItem('smartats_user', JSON.stringify(response.data))
     } catch (err) {
-      console.warn('Session check:', err.message)
+      console.warn('Session check failed:', err.message)
+      if (!isDemoMode) {
+        setUser(null)
+      }
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -35,9 +49,16 @@ export const AuthProvider = ({ children }) => {
     fetchProfile()
   }, [fetchProfile])
 
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null)
+    }
+    window.addEventListener('smartats_auth_expired', handleAuthExpired)
+    return () => window.removeEventListener('smartats_auth_expired', handleAuthExpired)
+  }, [])
+
   const login = async (email, password) => {
     try {
-      // Try real backend first if available
       const response = await apiClient.post('/auth/token/', { email, password })
       const { access, refresh, user: basicUser } = response.data
       setTokens(access, refresh)
@@ -45,17 +66,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('smartats_user', JSON.stringify(basicUser))
       return basicUser
     } catch (apiErr) {
-      // Fallback for prototype testing: find mock persona
-      const lower = email.toLowerCase()
-      let matched = MOCK_USERS.candidate
-      if (lower.includes('recruiter') || lower.includes('alex')) {
-        matched = MOCK_USERS.recruiter
-      } else if (lower.includes('admin') || lower.includes('sarah')) {
-        matched = MOCK_USERS.admin
+      if (isDemoMode) {
+        console.warn('Falling back to demo auth')
+        const lower = email.toLowerCase()
+        let matched = MOCK_USERS.candidate
+        if (lower.includes('recruiter') || lower.includes('alex')) {
+          matched = MOCK_USERS.recruiter
+        } else if (lower.includes('admin') || lower.includes('sarah')) {
+          matched = MOCK_USERS.admin
+        }
+        setUser(matched)
+        localStorage.setItem('smartats_user', JSON.stringify(matched))
+        return matched
       }
-      setUser(matched)
-      localStorage.setItem('smartats_user', JSON.stringify(matched))
-      return matched
+      throw apiErr
     }
   }
 
@@ -63,28 +87,30 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await apiClient.post('/auth/register/', userData)
       return response.data
-    } catch {
-      // Prototype mock registration success
-      return { id: 999, ...userData, is_active: true }
+    } catch (apiErr) {
+      if (isDemoMode) {
+        return { id: 999, ...userData, is_active: true }
+      }
+      throw apiErr
     }
   }
 
   const logout = async () => {
     const refresh = getRefreshToken()
-    if (refresh) {
+    if (refresh && !isDemoMode) {
       try {
         await apiClient.post('/auth/logout/', { refresh })
       } catch {
-        // ignore
+        // ignore errors on logout
       }
     }
     clearAuthStorage()
-    // Reset to unauthenticated
     setUser(null)
   }
 
   // Quick Persona / Role Switcher for Prototype Review
   const switchDemoRole = (role) => {
+    if (!isDemoMode) return
     let target = MOCK_USERS.candidate
     if (role === 'RECRUITER') target = MOCK_USERS.recruiter
     if (role === 'ADMIN') target = MOCK_USERS.admin

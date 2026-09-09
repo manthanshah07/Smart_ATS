@@ -20,6 +20,7 @@ export const clearAuthStorage = () => {
   localStorage.removeItem('smartats_access_token')
   localStorage.removeItem('smartats_refresh_token')
   localStorage.removeItem('smartats_user')
+  window.dispatchEvent(new Event('smartats_auth_expired'))
 }
 
 // Request Interceptor: Attach JWT Token if present
