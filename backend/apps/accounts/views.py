@@ -171,9 +171,12 @@ class CandidateResumeUploadView(APIView):
         if not file_obj:
             return Response({"error": "No resume file provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+        import os
+        file_ext = os.path.splitext(file_obj.name)[1]
+
         # Validate file extension
         valid_extensions = ['.pdf', '.docx']
-        if not any(file_obj.name.lower().endswith(ext) for ext in valid_extensions):
+        if not any(file_ext.lower() == ext for ext in valid_extensions):
             return Response({"error": "Invalid file format. Only PDF and DOCX are allowed."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Validate file size (e.g., max 5MB)
@@ -182,11 +185,27 @@ class CandidateResumeUploadView(APIView):
 
         candidate.resume_file = file_obj
         candidate.resume_uploaded_at = timezone.now()
-        candidate.save()
 
-        # Simulated parsed skills (as AI is not implemented yet)
-        simulated_skills = ['Python', 'Django', 'React']
-        candidate.parsed_skills = simulated_skills
+        # Extract Text
+        from apps.ai_engine.parser import ResumeParser
+        from apps.ai_engine.extractor import NLPExtractor
+        
+        file_obj.seek(0)
+        raw_text = ResumeParser.extract_text(file_obj, file_ext)
+        candidate.raw_resume_text = raw_text
+
+        # Parse NLP Entities
+        parsed_data = NLPExtractor.extract_entities(raw_text)
+        candidate.parsed_skills = parsed_data.get('skills', {})
+        candidate.parsed_education = parsed_data.get('education', [])
+        candidate.parsed_experience = parsed_data.get('experience', [])
+        candidate.parsed_projects = parsed_data.get('projects', [])
+        candidate.parsed_certifications = parsed_data.get('certifications', [])
+        candidate.parsed_achievements = parsed_data.get('achievements', [])
+        candidate.parsed_summary = parsed_data.get('summary', '')
+        candidate.parsed_contact = parsed_data.get('contact', {})
+        candidate.resume_validation = parsed_data.get('validation', {})
+        
         candidate.save()
 
         return Response(
@@ -194,7 +213,15 @@ class CandidateResumeUploadView(APIView):
                 "message": "Resume uploaded successfully.",
                 "resume_file": candidate.resume_file.name,
                 "resume_uploaded_at": candidate.resume_uploaded_at,
-                "parsed_skills": candidate.parsed_skills
+                "validation": candidate.resume_validation,
+                "parsed_skills": candidate.parsed_skills,
+                "parsed_education": candidate.parsed_education,
+                "parsed_experience": candidate.parsed_experience,
+                "parsed_projects": candidate.parsed_projects,
+                "parsed_certifications": candidate.parsed_certifications,
+                "parsed_achievements": candidate.parsed_achievements,
+                "parsed_summary": candidate.parsed_summary,
+                "parsed_contact": candidate.parsed_contact
             },
             status=status.HTTP_200_OK
         )

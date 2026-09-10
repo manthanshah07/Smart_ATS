@@ -41,8 +41,22 @@ class ApplicationSubmitView(generics.CreateAPIView):
             'bio': candidate.bio,
         }
 
-        serializer.save(candidate=candidate, resume_snapshot=resume_snapshot)
+        # We must save the application first so it has an ID, then we evaluate it.
+        # However, DRF's perform_create doesn't return the instance automatically.
+        # We can capture the saved instance via the serializer.
+        application = serializer.save(candidate=candidate, resume_snapshot=resume_snapshot)
 
+        # Trigger AI Pipeline
+        from apps.ai_engine.services import AIPipelineService
+        
+        try:
+            AIPipelineService.evaluate_application(application)
+        except Exception as e:
+            # We don't fail the application submission if AI evaluation fails.
+            # We log it and let it proceed (could be a retry mechanism later).
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"AI Pipeline failed for application {application.id}: {e}")
 
 class CandidateApplicationListView(generics.ListAPIView):
     """FR-9: Candidate tracks their own submitted applications."""
