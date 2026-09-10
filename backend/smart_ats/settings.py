@@ -1,5 +1,8 @@
 """
 Django settings for smart_ats project.
+
+Driven entirely by environment variables. Single settings file supports both
+local development (DEBUG=True) and production (DEBUG=False) through env config.
 """
 
 import os
@@ -15,17 +18,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Add apps directory to sys.path
 sys.path.insert(0, str(BASE_DIR))
 
-# Load environment variables from .env file
+# Load environment variables from .env file (no-op in production where env vars are injected)
 load_dotenv(BASE_DIR / '.env')
 
-# Quick-start development settings - unsuitable for production
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-smartats-dev-fallback-key-for-local-development-only-replace-in-prod')
+# ─── Core ──────────────────────────────────────────────────────────────────────
 
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',') if host.strip()]
+_raw_secret = os.getenv('SECRET_KEY', '')
 
-# Application definition
+if not DEBUG and (not _raw_secret or 'django-insecure' in _raw_secret or len(_raw_secret) < 40):
+    raise ValueError(
+        "FATAL: SECRET_KEY is missing, insecure, or too short for production. "
+        "Set a strong SECRET_KEY environment variable before deploying."
+    )
+
+SECRET_KEY = _raw_secret or 'django-insecure-smartats-dev-fallback-key-for-local-development-only-replace-in-prod'
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+    if host.strip()
+]
+
+# ─── Application ───────────────────────────────────────────────────────────────
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,6 +70,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise: must be immediately after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,7 +101,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smart_ats.wsgi.application'
 
-# Database Configuration (PostgreSQL / Neon via DATABASE_URL)
+# ─── Database ──────────────────────────────────────────────────────────────────
+# Configurable via DATABASE_URL. Defaults to local PostgreSQL for development.
+# Production: set DATABASE_URL to your Neon connection string.
+
 DATABASE_URL = os.getenv(
     'DATABASE_URL',
     'postgres://postgres:postgres@localhost:5432/smartats_db'
@@ -96,10 +118,12 @@ DATABASES = {
     )
 }
 
-# Custom User Model
+# ─── Custom User Model ─────────────────────────────────────────────────────────
+
 AUTH_USER_MODEL = 'accounts.User'
 
-# Password validation
+# ─── Password Validation ───────────────────────────────────────────────────────
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -116,24 +140,49 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
+# ─── Internationalization ──────────────────────────────────────────────────────
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# ─── Static Files ──────────────────────────────────────────────────────────────
+# WhiteNoise serves static files directly from Django in production.
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media files (Uploaded resumes, company logos)
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    # NOTE: Media/resume files use local filesystem storage.
+    # PRODUCTION LIMITATION: Render's ephemeral disk means uploaded resume files
+    # are lost on each deploy/restart. The parsed text and AI scores ARE durable
+    # in PostgreSQL (Neon). Durable file storage (e.g. S3 via django-storages)
+    # is required for persistent resume downloads — planned for Phase 6B.
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
+# ─── Media Files (Resume Uploads) ─────────────────────────────────────────────
+# IMPORTANT: These files are stored on local disk.
+# In production on Render (ephemeral disk), uploaded files will be lost on
+# each deploy or instance restart. The extracted resume text and AI analysis
+# are safely stored in PostgreSQL. Media files must be migrated to a
+# persistent object store (S3/Cloudinary) for durable download links.
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
+# ─── Primary Key ───────────────────────────────────────────────────────────────
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django REST Framework Configuration
+# ─── Django REST Framework ─────────────────────────────────────────────────────
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -146,7 +195,8 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
 
-# Simple JWT Configuration
+# ─── JWT ───────────────────────────────────────────────────────────────────────
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -163,11 +213,15 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-# Email Configuration (Console Backend for Development)
+# ─── Email ─────────────────────────────────────────────────────────────────────
+
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@smartats.local')
 
-# CORS Configuration
+# ─── CORS ──────────────────────────────────────────────────────────────────────
+# CORS_ALLOWED_ORIGINS must be set explicitly in production.
+# Never use CORS_ALLOW_ALL_ORIGINS = True.
+
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -177,3 +231,30 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# ─── Security (production-only) ────────────────────────────────────────────────
+# These settings are appropriate for Render + HTTPS deployment.
+# Render terminates SSL at the load balancer and passes X-Forwarded-Proto header.
+# SSL redirect is handled by Render's infrastructure — do NOT set
+# SECURE_SSL_REDIRECT=True as it causes redirect loops behind Render's proxy.
+
+if not DEBUG:
+    # Trust Render's SSL termination proxy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Cookie security
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+
+    # Clickjacking protection (already covered by middleware, explicit here)
+    X_FRAME_OPTIONS = 'DENY'
+
+    # HSTS — enforce HTTPS for 1 year, include subdomains
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Content type sniffing protection
+    SECURE_CONTENT_TYPE_NOSNIFF = True
