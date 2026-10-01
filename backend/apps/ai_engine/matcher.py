@@ -64,22 +64,28 @@ class ExplainableMatcher:
                 years = []
                 for exp in candidate.parsed_experience:
                     if isinstance(exp, str):
-                        # Backwards compatibility for ["3 years"]
                         val = float(exp.split()[0].replace('+', ''))
                         years.append(val)
                     elif isinstance(exp, dict) and exp.get('duration'):
-                        # Very basic fallback for old math heuristic
-                        # In a real system, you'd calculate exact date diffs
                         dur_str = exp['duration']
                         match = re.search(r'(\d+(?:\.\d+)?)\+?\s*years?', dur_str, re.I)
                         if match:
                             years.append(float(match.group(1)))
                         else:
-                            # Try to extract the date diff heuristically
-                            years.append(0.0) 
+                            # Try to extract year diffs e.g. 2021 - 2024 or 2022 - Present
+                            year_matches = re.findall(r'\b(20\d{2}|19\d{2})\b', dur_str)
+                            if len(year_matches) >= 2:
+                                diff = abs(int(year_matches[1]) - int(year_matches[0]))
+                                years.append(float(max(1, diff)))
+                            elif len(year_matches) == 1 and re.search(r'present|current', dur_str, re.I):
+                                current_year = 2026
+                                diff = current_year - int(year_matches[0])
+                                years.append(float(max(1, diff)))
+                            else:
+                                years.append(0.5)
                 
                 if years:
-                    cand_exp_years = max(years)
+                    cand_exp_years = sum(years) if len(years) > 1 else max(years)
             except Exception:
                 cand_exp_years = 0.0
                 

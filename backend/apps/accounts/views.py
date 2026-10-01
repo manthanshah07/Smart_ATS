@@ -205,23 +205,42 @@ class CandidateResumeUploadView(APIView):
         candidate.parsed_summary = parsed_data.get('summary', '')
         candidate.parsed_contact = parsed_data.get('contact', {})
         candidate.resume_validation = parsed_data.get('validation', {})
+
+        # Automatically enrich candidate user profile if currently default/blank
+        contact_info = parsed_data.get('contact', {})
+        user = request.user
+        user_modified = False
+
+        if not user.first_name and contact_info.get('name'):
+            name_parts = contact_info['name'].split()
+            user.first_name = name_parts[0]
+            if len(name_parts) > 1:
+                user.last_name = " ".join(name_parts[1:])
+            user_modified = True
+
+        if user_modified:
+            user.save()
+
+        if not candidate.phone and contact_info.get('phone'):
+            candidate.phone = contact_info['phone']
+        if not candidate.location and contact_info.get('location'):
+            candidate.location = contact_info['location']
+        if not candidate.bio and parsed_data.get('summary'):
+            candidate.bio = parsed_data['summary']
+        if not candidate.headline and candidate.parsed_experience:
+            first_role = candidate.parsed_experience[0].get('role') or candidate.parsed_experience[0].get('title')
+            if first_role:
+                candidate.headline = first_role
         
         candidate.save()
 
+        profile_data = CandidateProfileSerializer(candidate).data
+
         return Response(
             {
-                "message": "Resume uploaded successfully.",
-                "resume_file": candidate.resume_file.name,
-                "resume_uploaded_at": candidate.resume_uploaded_at,
-                "validation": candidate.resume_validation,
-                "parsed_skills": candidate.parsed_skills,
-                "parsed_education": candidate.parsed_education,
-                "parsed_experience": candidate.parsed_experience,
-                "parsed_projects": candidate.parsed_projects,
-                "parsed_certifications": candidate.parsed_certifications,
-                "parsed_achievements": candidate.parsed_achievements,
-                "parsed_summary": candidate.parsed_summary,
-                "parsed_contact": candidate.parsed_contact
+                "message": "Resume uploaded and analyzed successfully.",
+                **profile_data,
+                "validation": candidate.resume_validation
             },
             status=status.HTTP_200_OK
         )

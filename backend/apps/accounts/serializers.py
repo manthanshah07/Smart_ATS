@@ -19,19 +19,31 @@ class UserSerializer(serializers.ModelSerializer):
 class CandidateProfileSerializer(serializers.ModelSerializer):
     """Candidate profile serializer."""
 
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = Candidate
         fields = [
-            'id', 'phone', 'headline', 'bio', 'location',
-            'resume_file', 'raw_resume_text', 'parsed_skills',
-            'parsed_education', 'parsed_experience',
+            'id', 'first_name', 'last_name', 'email', 'name',
+            'phone', 'headline', 'bio', 'location',
+            'resume_file', 'raw_resume_text',
+            'parsed_skills', 'parsed_education', 'parsed_experience',
+            'parsed_projects', 'parsed_certifications', 'parsed_achievements',
+            'parsed_summary', 'parsed_contact', 'resume_validation',
             'resume_uploaded_at', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'raw_resume_text', 'parsed_skills',
-            'parsed_education', 'parsed_experience', 'resume_uploaded_at',
+            'id', 'first_name', 'last_name', 'email', 'name',
+            'raw_resume_text', 'resume_uploaded_at',
             'created_at', 'updated_at'
         ]
+
+    def get_name(self, obj):
+        full = f"{obj.user.first_name} {obj.user.last_name}".strip()
+        return full or obj.user.email
 
 
 class RecruiterProfileSerializer(serializers.ModelSerializer):
