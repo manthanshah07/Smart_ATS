@@ -19,11 +19,11 @@ def get_nlp():
 
 SECTION_HEADERS_REGEX = (
     r'^(education|academic background|academics|qualifications|educational qualifications|'
-    r'experience|work experience|professional experience|employment history|work history|internships?|'
+    r'experience|work experience|professional experience|employment history|work history|internships?|internship experience|work experience & internships|'
     r'projects|personal projects|academic projects|key projects|selected projects|major projects|'
-    r'technical skills|skills & abilities|skills|competencies|areas of expertise|'
+    r'technical skills|skills & abilities|skills & competencies|skills|competencies|areas of expertise|'
     r'certifications?|certificates?|professional certifications?|licenses & certifications?|'
-    r'achievements?|awards?|honors?|accomplishments?|'
+    r'achievements?|awards?|honors?|accomplishments?|patents & achievements|'
     r'summary|professional summary|profile|objective|career objective|about me)\b'
 )
 
@@ -44,8 +44,14 @@ class NLPExtractor:
         education = cls._extract_education(raw_text)
         experience = cls._extract_experience(raw_text)
         projects = cls._extract_projects(raw_text)
-        certs = cls._extract_list_section(raw_text, r'certifications?|certificates?|professional certifications?|licenses & certifications?')
-        achievements = cls._extract_list_section(raw_text, r'achievements?|awards?|honors?|accomplishments?')
+        certs = cls._extract_list_section(
+            raw_text,
+            r'certifications?|certificates?|professional certifications?|licenses & certifications?'
+        )
+        achievements = cls._extract_list_section(
+            raw_text,
+            r'achievements?|awards?|honors?|accomplishments?|patents & achievements'
+        )
         summary = cls._extract_summary(raw_text)
 
         validation = cls._validate_resume(contact, skills, education, experience, projects, summary)
@@ -179,22 +185,44 @@ class NLPExtractor:
         if github_match:
             contact['github'] = f"https://github.com/{github_match.group(1)}"
 
-        # Portfolio / Personal Website
+        # Portfolio / Personal Website (Avoid matching email domains or degree acronyms like B.Tech)
+        text_for_portfolio = raw_text
+        if contact['email']:
+            text_for_portfolio = text_for_portfolio.replace(contact['email'], ' ')
+        # Mask out B.Tech, M.Tech, etc. so they aren't parsed as .tech TLDs
+        text_for_portfolio = re.sub(r'\b[BM]\.?Tech\b', ' ', text_for_portfolio, flags=re.I)
+        text_for_portfolio = re.sub(r'https?://(?:www\.)?(?:linkedin|github)\.com/[^\s]+', ' ', text_for_portfolio, flags=re.I)
+
         portfolio_match = re.search(
-            r'(?:https?://)?(?:www\.)?([a-zA-Z0-9_-]+\.(?:vercel\.app|netlify\.app|github\.io|me|dev|tech|site|co|io))\b',
-            raw_text,
+            r'(?:https?://)?(?:www\.)?([a-zA-Z0-9_-]+\.(?:vercel\.app|netlify\.app|github\.io|streamlit\.app|onrender\.com|me|dev|site|io))\b',
+            text_for_portfolio,
             re.I
         )
         if portfolio_match:
-            contact['portfolio'] = f"https://{portfolio_match.group(1)}"
+            cand_domain = portfolio_match.group(1)
+            # Avoid matching email domain suffix
+            if contact['email'] and cand_domain in contact['email']:
+                pass
+            else:
+                contact['portfolio'] = f"https://{cand_domain}"
 
-        # Location heuristic from top lines or NER GPE
-        for ent in doc.ents:
-            if ent.label_ in ("GPE", "LOC") and ent.start_char < 1500:
-                loc_text = ent.text.strip()
-                if len(loc_text) > 2 and not any(c.isdigit() for c in loc_text):
-                    contact['location'] = loc_text
-                    break
+        # Location heuristic: Check header lines for "City, State/Country"
+        top_lines = raw_text.split('\n')[:6]
+        header_text = " | ".join(top_lines)
+        loc_pattern = r'\b([A-Z][a-zA-Z\s]{2,20},\s*(?:India|USA|United States|UK|Canada|California|CA|NY|New York|Maharashtra|Mumbai|Delhi|Bengaluru|Bangalore|Pune|San Francisco|London))\b'
+        loc_match = re.search(loc_pattern, header_text, re.I)
+        if loc_match:
+            contact['location'] = loc_match.group(1).strip()
+        else:
+            # Fallback to NER GPE if not name part
+            for ent in doc.ents:
+                if ent.label_ in ("GPE", "LOC") and ent.start_char < 1500:
+                    loc_text = ent.text.strip()
+                    if (len(loc_text) > 2 and
+                        not any(c.isdigit() for c in loc_text) and
+                        loc_text.lower() not in (contact['name'].lower(), contact['email'].lower(), 'react', 'b.tech')):
+                        contact['location'] = loc_text
+                        break
 
         return contact
 
@@ -204,7 +232,6 @@ class NLPExtractor:
         categorized = {}
         for alias, canonical in ATS_SKILLS_VOCABULARY.items():
             escaped_alias = re.escape(alias)
-            # Use negative lookbehind/lookahead to only match whole words and prevent substring matching like C in Contact
             if re.match(r'^\w+$', alias):
                 pattern = r'\b' + escaped_alias + r'\b'
             else:
@@ -217,7 +244,6 @@ class NLPExtractor:
                 if canonical not in categorized[category]:
                     categorized[category].append(canonical)
 
-        # Sort skills within each category deterministically
         for cat in categorized:
             categorized[cat] = sorted(categorized[cat])
 
@@ -255,6 +281,10 @@ class NLPExtractor:
                 continue
             if in_edu and re.match(SECTION_HEADERS_REGEX, line_strip, re.I):
                 in_edu = False
+                if current_edu.get("degree") or current_edu.get("institution"):
+                    cls._normalize_edu_item(current_edu)
+                    edu_list.append(current_edu)
+                    current_edu = {}
                 break
 
             if in_edu:
@@ -273,18 +303,17 @@ class NLPExtractor:
                     if len(parts) > 1 and not re.search(date_pattern, parts[1]):
                         current_edu["institution"] = parts[1].strip()
 
-                elif gpa_match:
+                if gpa_match:
                     current_edu["gpa"] = gpa_match.group(1).strip()
                     current_edu["grade"] = gpa_match.group(0).strip()
-                elif date_match:
+                if date_match:
                     current_edu["duration"] = date_match.group(0).strip()
                     current_edu["year"] = date_match.group(0).strip()
-                elif current_edu and not current_edu.get("institution") and not line_strip.startswith('-'):
-                    # Heuristic: line with university/college or institute
+                elif not current_edu.get("institution") and not line_strip.startswith('-') and not degree_match and not gpa_match:
                     current_edu["institution"] = line_strip
-                elif current_edu and not current_edu.get("year"):
+                elif not current_edu.get("year") and not date_match:
                     yr_match = re.search(single_year_pattern, line_strip)
-                    if yr_match:
+                    if yr_match and not gpa_match:
                         current_edu["year"] = yr_match.group(1)
 
         if current_edu.get("degree") or current_edu.get("institution"):
@@ -324,11 +353,15 @@ class NLPExtractor:
             if not line_strip:
                 continue
 
-            if re.match(r'^(experience|work experience|professional experience|employment history|work history|internships?)$', line_strip, re.I):
+            if re.match(r'^(experience|work experience|professional experience|employment history|work history|internships?|internship experience|work experience & internships)$', line_strip, re.I):
                 in_exp = True
                 continue
             if in_exp and re.match(SECTION_HEADERS_REGEX, line_strip, re.I):
                 in_exp = False
+                if current_exp.get("company") or current_exp.get("role") or current_exp.get("title"):
+                    cls._normalize_exp_item(current_exp)
+                    exp_list.append(current_exp)
+                    current_exp = {"responsibilities": []}
                 break
 
             if in_exp:
@@ -403,6 +436,12 @@ class NLPExtractor:
         in_proj = False
         current_proj = None
 
+        date_pattern = (
+            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)[a-z]*\s+\d{4}|\d{4})'
+            r'\s*(?:-|to|–|—)\s*'
+            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}|\d{4}|Present|Expected)'
+        )
+
         for line in lines:
             line_strip = line.strip()
             if not line_strip:
@@ -413,18 +452,29 @@ class NLPExtractor:
                 continue
             if in_proj and re.match(SECTION_HEADERS_REGEX, line_strip, re.I):
                 in_proj = False
+                if current_proj and current_proj.get("name"):
+                    cls._populate_project_technologies(current_proj)
+                    proj_list.append(current_proj)
+                    current_proj = None
                 break
 
             if in_proj:
                 is_bullet = line_strip.startswith('-') or line_strip.startswith('•') or line_strip.startswith('*')
-                is_long_text = len(line_strip) > 50
+                is_date_line = bool(re.match(date_pattern, line_strip, re.I))
+                is_meta_line = line_strip.lower().startswith(('tech stack', 'technologies', 'live link', 'github', 'http')) or is_date_line
 
-                if not is_bullet and not is_long_text and not line_strip.lower().startswith('tech stack'):
+                # Check if this line is a new project title line
+                # Project titles typically have name | link or name - description/tech, or short clean line
+                is_new_proj_header = not is_bullet and not is_meta_line and (
+                    '|' in line_strip or '—' in line_strip or (' - ' in line_strip and len(line_strip) < 120) or (len(line_strip) < 55 and not line_strip.endswith('.'))
+                )
+
+                if is_new_proj_header:
                     if current_proj and current_proj.get("name"):
                         cls._populate_project_technologies(current_proj)
                         proj_list.append(current_proj)
 
-                    parts = re.split(r'\||—|-', line_strip)
+                    parts = re.split(r'\||—|\s-\s', line_strip)
                     proj_name = parts[0].strip()
                     desc = parts[1].strip() if len(parts) > 1 else ""
 
@@ -542,7 +592,6 @@ class NLPExtractor:
         if contact.get('name'):
             score += 10
 
-        # Skills points
         skill_count = sum(len(s) for s in skills.values()) if isinstance(skills, dict) else len(skills)
         if skill_count >= 5:
             score += 25
