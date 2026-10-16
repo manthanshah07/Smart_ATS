@@ -19,8 +19,9 @@
 - Database-independent Django checks and safe database configuration.
 - End-to-end integration and completion of FR-1–FR-24.
 
-## Active task
-`tasks/TASK-001-baseline-audit.md` — APPROVED (read-only audit; no application-code changes).
+## Active tasks
+- `tasks/TASK-001-baseline-audit.md` — APPROVED (read-only application baseline audit).
+- `tasks/TASK-002-queue-loop-smoke-test.md` — APPROVED after TASK-001 is VERIFIED (automation-only, read-only validation).
 
 ## Human gates
 Human approval required for follow-on feature tasks, schema/dependency/architecture changes, production DB actions, commits, pushes, merges, deploys, and destructive operations.
