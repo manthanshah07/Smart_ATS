@@ -4,10 +4,12 @@
 Do not guess what to build next. Establish what works, what is tested, and which gap matters most. Tasks require a human to mark them APPROVED before execution.
 
 ## Phase A — Baseline audit (active)
-- [x] Review repository overview, architecture, requirements, and roadmap docs.
+- [x] Review repository overview, architecture, requirements, roadmap, and existence of historical audit/release reports.
 - [ ] Confirm working tree and dependencies in the user's local checkout.
 - [ ] Run safe backend checks with local/test settings and synthetic data.
 - [ ] Run frontend production build when dependencies are already present.
+- [ ] Reconcile historical reports against current code and tests.
+- [ ] Inspect public tracked files for sensitive candidate data/secrets; report risk without reproducing or removing data.
 - [ ] Map FR-1–FR-24 to implementation and test evidence.
 - [ ] Record test gaps, blockers, and recommended next task.
 
