@@ -5,20 +5,33 @@ import apiClient from './api'
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
 
 // Normalizes backend DRF applications to frontend expectations
-const normalizeApp = (app) => {
+export const normalizeApp = (app) => {
+  if (!app) return app
+  const cd = app.candidate_details || {}
+  const first = cd.first_name || ''
+  const last = cd.last_name || ''
+  const fullName = `${first} ${last}`.trim()
+  const candidate_name =
+    cd.name ||
+    fullName ||
+    app.candidate_name ||
+    'Unknown Candidate'
+
+  const candidate_email = cd.email || app.candidate_email || ''
+
   return {
     ...app,
-    job_title: app.job_details?.title || 'Unknown Position',
-    company_name: app.job_details?.company_details?.name || 'Unknown Company',
-    company_location: app.job_details?.location || '',
-    candidate_name: `${app.candidate_details?.user_name || ''}`.trim() || 'Unknown Candidate',
-    candidate_email: app.candidate_details?.user_email || '',
-    candidate_headline: app.candidate_details?.headline || '',
-    candidate_location: app.candidate_details?.location || '',
-    match_score: app.ai_analysis?.overall_match_score || null,
+    job_title: app.job_details?.title || app.job_title || 'Unknown Position',
+    company_name: app.job_details?.company_details?.name || app.company_name || 'Unknown Company',
+    company_location: app.job_details?.location || app.company_location || '',
+    candidate_name,
+    candidate_email,
+    candidate_headline: cd.headline || app.candidate_headline || '',
+    candidate_location: cd.location || app.candidate_location || '',
+    match_score: app.ai_analysis?.overall_match_score ?? app.match_score ?? null,
     timeline: (app.status_history || []).map((history) => ({
       step: history.status,
-      title: history.status.replace(/_/g, ' '),
+      title: (history.status || '').replace(/_/g, ' '),
       date: history.changed_at,
       done: true,
     })),
@@ -52,17 +65,10 @@ export const applicationService = {
 
   getApplicationById: async (id) => {
     if (!isDemoMode) {
-      // Assuming recruiter accesses applicants or candidate uses their own list.
-      // DRF doesn't have a direct application detail view yet for general purpose, 
-      // but if the frontend calls this, we must fetch from list and filter.
-      // Wait! The backend doesn't have an endpoint for `GET /applications/{id}/`.
-      // I'll simulate it by returning from the appropriate list.
-      // However, usually it's passed down or fetched from applicant list.
-      const response = await apiClient.get('/candidate/applications/')
-      const results = response.data.results || response.data
-      const app = results.find((a) => a.id === Number(id))
-      if (app) return normalizeApp(app)
-      throw new Error(`Application #${id} not found`)
+      // Uses the new role-safe GET /api/v1/applications/{id}/ endpoint.
+      // Works for both candidates (own applications) and recruiters (company's applications).
+      const response = await apiClient.get(`/applications/${id}/`)
+      return normalizeApp(response.data)
     }
 
     const app = MOCK_APPLICATIONS.find((a) => a.id === Number(id))

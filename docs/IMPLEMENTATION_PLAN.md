@@ -3,15 +3,15 @@
 ## Operating rule
 Do not guess what to build next. Establish what works, what is tested, and which gap matters most. Tasks require a human to mark them APPROVED before execution.
 
-## Phase A — Baseline audit (active)
+## Phase A — Baseline audit (completed)
 - [x] Review repository overview, architecture, requirements, roadmap, and existence of historical audit/release reports.
-- [ ] Confirm working tree and dependencies in the user's local checkout.
-- [ ] Run safe backend checks with local/test settings and synthetic data.
-- [ ] Run frontend production build when dependencies are already present.
-- [ ] Reconcile historical reports against current code and tests.
-- [ ] Inspect public tracked files for sensitive candidate data/secrets; report risk without reproducing or removing data.
-- [ ] Map FR-1–FR-24 to implementation and test evidence.
-- [ ] Record test gaps, blockers, and recommended next task.
+- [x] Confirm working tree and dependencies in the user's local checkout.
+- [x] Run safe backend checks with local/test settings and synthetic data (62/62 unit tests passing).
+- [x] Run frontend production build when dependencies are already present (`npm run build` passing).
+- [x] Reconcile historical reports against current code and tests.
+- [x] Inspect public tracked files for sensitive candidate data/secrets; report risk without reproducing or removing data.
+- [x] Map FR-1–FR-24 to implementation and test evidence (`docs/SMARTATS_BASELINE_AUDIT.md`).
+- [x] Record test gaps, blockers, and recommended next task (`tasks/TASK-003-admin-analytics-and-endpoints.md` - DRAFT).
 
 ## Phase B — Close highest-value verified gap
 Create one narrow task from Phase A evidence, with acceptance criteria, tests, exclusions, risk level, and dependencies. Leave DRAFT until a human approves it.

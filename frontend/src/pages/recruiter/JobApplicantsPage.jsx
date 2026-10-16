@@ -47,10 +47,20 @@ export const JobApplicantsPage = () => {
   }, [id])
 
   const handleUpdateStatus = async (appId, newStatus) => {
-    await applicationService.updateStatus(appId, newStatus)
-    setActionFeedback(`Candidate status updated to ${newStatus.replace('_', ' ')}`)
-    setTimeout(() => setActionFeedback(''), 3000)
-    loadData()
+    try {
+      const targetApp = applicants.find((a) => a.id === appId)
+      if (newStatus === 'SHORTLISTED' && targetApp?.status === 'APPLIED') {
+        await applicationService.updateStatus(appId, 'REVIEWING')
+      }
+      await applicationService.updateStatus(appId, newStatus)
+      setActionFeedback(`Candidate status updated to ${newStatus.replace('_', ' ')}`)
+      setTimeout(() => setActionFeedback(''), 3000)
+      loadData()
+    } catch (err) {
+      console.error(err)
+      setActionFeedback(err.response?.data?.status?.[0] || 'Status update failed')
+      setTimeout(() => setActionFeedback(''), 3000)
+    }
   }
 
   const filteredApplicants = applicants.filter((app) => {
@@ -180,11 +190,20 @@ export const JobApplicantsPage = () => {
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1 max-w-xs">
-                        {(app.resume_snapshot?.skills || []).slice(0, 3).map((s) => (
-                          <span key={s} className="px-1.5 py-0.2 rounded text-[10px] bg-muted text-muted-foreground border border-border">
-                            {s}
-                          </span>
-                        ))}
+                        {(() => {
+                          const rawSkills = app.resume_snapshot?.parsed_skills || app.resume_snapshot?.skills || []
+                          const skillsList = Array.isArray(rawSkills)
+                            ? rawSkills
+                            : Object.values(rawSkills || {}).flat().filter(Boolean)
+                          if (!skillsList.length) {
+                            return <span className="text-[10px] text-muted-foreground">—</span>
+                          }
+                          return skillsList.slice(0, 3).map((s) => (
+                            <span key={s} className="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground border border-border">
+                              {s}
+                            </span>
+                          ))
+                        })()}
                       </div>
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">

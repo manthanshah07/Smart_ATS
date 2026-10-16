@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    ApplicationDetailView,
     ApplicationSubmitView,
     CandidateApplicationListView,
     JobApplicantsRankedListView,
@@ -9,6 +10,7 @@ from .views import (
 
 urlpatterns = [
     path('applications/', ApplicationSubmitView.as_view(), name='application_submit'),
+    path('applications/<int:pk>/', ApplicationDetailView.as_view(), name='application_detail'),
     path('candidate/applications/', CandidateApplicationListView.as_view(), name='candidate_applications'),
     path('candidate/applications/<int:pk>/withdraw/', ApplicationWithdrawView.as_view(), name='application_withdraw'),
     path('jobs/<int:job_id>/applicants/', JobApplicantsRankedListView.as_view(), name='job_applicants_ranked'),

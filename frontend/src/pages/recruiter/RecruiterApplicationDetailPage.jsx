@@ -62,15 +62,24 @@ export const RecruiterApplicationDetailPage = () => {
   }, [id])
 
   const handleUpdateStatus = async (newStatus) => {
-    await applicationService.updateStatus(app.id, newStatus)
-    const labels = {
-      SHORTLISTED: 'Candidate shortlisted.',
-      REJECTED: 'Application marked as not selected.',
-      REVIEWING: 'Application moved to review.',
+    try {
+      if (newStatus === 'SHORTLISTED' && app.status === 'APPLIED') {
+        await applicationService.updateStatus(app.id, 'REVIEWING')
+      }
+      await applicationService.updateStatus(app.id, newStatus)
+      const labels = {
+        SHORTLISTED: 'Candidate shortlisted.',
+        REJECTED: 'Application marked as not selected.',
+        REVIEWING: 'Application moved to review.',
+      }
+      setStatusMsg(labels[newStatus] || `Status updated to ${newStatus.replace(/_/g, ' ')}.`)
+      setTimeout(() => setStatusMsg(''), 4000)
+      loadApp()
+    } catch (err) {
+      console.error(err)
+      setStatusMsg(err.response?.data?.status?.[0] || 'Status update failed')
+      setTimeout(() => setStatusMsg(''), 4000)
     }
-    setStatusMsg(labels[newStatus] || `Status updated to ${newStatus.replace(/_/g, ' ')}.`)
-    setTimeout(() => setStatusMsg(''), 4000)
-    loadApp()
   }
 
   const handleScheduleInterview = async (e) => {
@@ -103,19 +112,29 @@ export const RecruiterApplicationDetailPage = () => {
   if (error || !app) return <ErrorState message={error || 'Application record not found'} />
 
   const resume = app.resume_snapshot || {}
-  const skills = resume.skills || []
-  const education = resume.education || []
-  const experience = resume.experience || []
+  const rawSkills = resume.parsed_skills || resume.skills || []
+  const skills = Array.isArray(rawSkills)
+    ? rawSkills
+    : Object.values(rawSkills || {}).flat().filter(Boolean)
+  const education = resume.parsed_education || resume.education || []
+  const experience = resume.parsed_experience || resume.experience || []
 
   const canShortlist = app.status !== 'SHORTLISTED' && app.status !== 'INTERVIEW_SCHEDULED' && app.status !== 'REJECTED'
   const canReject = app.status !== 'REJECTED'
   const canSchedule = app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'
 
+  const jobId = app.job || app.job_id || 1
+  const expYears = app.candidate_experience_years != null
+    ? `${app.candidate_experience_years} yr${app.candidate_experience_years !== 1 ? 's' : ''} exp`
+    : experience.length > 0
+    ? `${experience.length} position${experience.length !== 1 ? 's' : ''}`
+    : null
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Back Link */}
       <Link
-        to={`/recruiter/jobs/${app.job_id}/applicants`}
+        to={`/recruiter/jobs/${jobId}/applicants`}
         className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition font-medium"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Back to candidate pipeline
@@ -132,8 +151,8 @@ export const RecruiterApplicationDetailPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            {app.candidate_headline && (
-              <span className="text-foreground font-medium">{app.candidate_headline}</span>
+            {(resume.headline || app.candidate_headline) && (
+              <span className="text-foreground font-medium">{resume.headline || app.candidate_headline}</span>
             )}
             {app.candidate_location && (
               <span className="flex items-center gap-1">
@@ -205,12 +224,19 @@ export const RecruiterApplicationDetailPage = () => {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Candidate Resume
               </h2>
-              {app.candidate_experience_years != null && (
+              {expYears && (
                 <span className="text-[11px] font-mono text-muted-foreground">
-                  {app.candidate_experience_years} yr{app.candidate_experience_years !== 1 ? 's' : ''} exp
+                  {expYears}
                 </span>
               )}
             </div>
+
+            {/* Bio/Summary if present */}
+            {(resume.bio || app.candidate_details?.bio || app.candidate_details?.parsed_summary) && (
+              <p className="text-xs text-muted-foreground leading-relaxed border-b border-border pb-3">
+                {resume.bio || app.candidate_details?.bio || app.candidate_details?.parsed_summary}
+              </p>
+            )}
 
             {/* Skills */}
             {skills.length > 0 && (
@@ -234,8 +260,10 @@ export const RecruiterApplicationDetailPage = () => {
                 </div>
                 {education.map((edu, idx) => (
                   <div key={idx} className="text-xs">
-                    <p className="font-semibold text-foreground">{edu.degree}</p>
-                    <p className="text-muted-foreground">{edu.institution} &bull; {edu.year}</p>
+                    <p className="font-semibold text-foreground">{edu.degree || 'Degree'}</p>
+                    <p className="text-muted-foreground">
+                      {[edu.institution, edu.year || edu.duration, edu.grade].filter(Boolean).join(' • ')}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -247,16 +275,28 @@ export const RecruiterApplicationDetailPage = () => {
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                   <Briefcase className="h-3.5 w-3.5" /> Experience
                 </div>
-                {experience.map((exp, idx) => (
-                  <div key={idx} className="text-xs space-y-0.5">
-                    <p className="font-semibold text-foreground">{exp.title}</p>
-                    <p className="text-muted-foreground">{exp.company} &bull; {exp.duration}</p>
-                    {exp.description && (
-                      <p className="text-muted-foreground text-[11px] leading-relaxed">{exp.description}</p>
-                    )}
-                  </div>
-                ))}
+                {experience.map((exp, idx) => {
+                  const title = exp.title || exp.role || 'Position'
+                  const company = exp.company || 'Company'
+                  const duration = exp.duration || ''
+                  const desc = exp.description || (Array.isArray(exp.responsibilities) ? exp.responsibilities.join('. ') : '')
+                  return (
+                    <div key={idx} className="text-xs space-y-0.5">
+                      <p className="font-semibold text-foreground">{title}</p>
+                      <p className="text-muted-foreground">
+                        {[company, duration].filter(Boolean).join(' • ')}
+                      </p>
+                      {desc && (
+                        <p className="text-muted-foreground text-[11px] leading-relaxed">{desc}</p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
+            )}
+
+            {skills.length === 0 && education.length === 0 && experience.length === 0 && (
+              <p className="text-xs text-muted-foreground italic">No parsed resume details available for this candidate.</p>
             )}
           </div>
 

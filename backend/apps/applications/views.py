@@ -10,6 +10,47 @@ from apps.jobs.models import Job
 from apps.accounts.permissions import IsCandidate, IsRecruiter, IsAdmin
 
 
+class ApplicationDetailView(generics.RetrieveAPIView):
+    """
+    GET /api/v1/applications/{id}/
+
+    Role-safe single-application retrieval:
+      - Candidate: may only retrieve their own application.
+      - Recruiter:  may only retrieve applications for jobs belonging to their company.
+      - Admin:      unrestricted access.
+    """
+    serializer_class = ApplicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Application.objects.select_related(
+            'job', 'job__company',
+            'candidate', 'candidate__user',
+            'ai_analysis',
+        ).prefetch_related('status_history')
+
+    def get_object(self):
+        obj = generics.get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
+        user = self.request.user
+
+        if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+            return obj
+
+        if user.role == 'CANDIDATE':
+            candidate = getattr(user, 'candidate_profile', None)
+            if not candidate or obj.candidate != candidate:
+                raise PermissionDenied("You do not have permission to view this application.")
+            return obj
+
+        if user.role == 'RECRUITER':
+            recruiter = getattr(user, 'recruiter_profile', None)
+            if not recruiter or obj.job.company != recruiter.company:
+                raise PermissionDenied("You do not have permission to view this application.")
+            return obj
+
+        raise PermissionDenied("Access denied.")
+
+
 class ApplicationSubmitView(generics.CreateAPIView):
     """FR-8: Candidate submits an application for a job."""
     serializer_class = ApplicationSerializer
